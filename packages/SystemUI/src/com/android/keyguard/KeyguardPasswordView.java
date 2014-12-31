@@ -35,9 +35,13 @@ import android.view.inputmethod.InputMethodSubtype;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import com.android.internal.widget.LockPatternUtils.RequestThrottledException;
 import com.android.internal.widget.TextViewInputDisabler;
 
 import java.util.List;
+
+import nexus.provider.NexusSettings;
+
 /**
  * Displays an alphanumeric (latin-1) key entry for the user to enter
  * an unlock password
@@ -60,6 +64,9 @@ public class KeyguardPasswordView extends KeyguardAbsKeyInputView
 
     private Interpolator mLinearOutSlowInInterpolator;
     private Interpolator mFastOutLinearInInterpolator;
+
+    private final boolean quickUnlock = NexusSettings.getBoolForCurrentUser(getContext(), NexusSettings.QUICK_PIN_UNLOCK, false);
+    private final int userId = KeyguardUpdateMonitor.getCurrentUser();
 
     public KeyguardPasswordView(Context context) {
         this(context, null);
@@ -342,6 +349,15 @@ public class KeyguardPasswordView extends KeyguardAbsKeyInputView
         // is from the user.
         if (!TextUtils.isEmpty(s)) {
             onUserInput();
+            if (quickUnlock) {
+                String entry = getPasswordText();
+                if (entry.length() > MINIMUM_PASSWORD_LENGTH_BEFORE_REPORT
+                        && kpvCheckPassword(entry)) {
+                    mCallback.reportUnlockAttempt(true, userId);
+                    mCallback.dismiss(true);
+                    resetPasswordText(true);
+                }
+           }
         }
     }
 
@@ -360,5 +376,13 @@ public class KeyguardPasswordView extends KeyguardAbsKeyInputView
             return true;
         }
         return false;
+    }
+
+    private boolean kpvCheckPassword(String entry) {
+        try {
+            return mLockPatternUtils.checkPassword(entry, userId);
+        } catch (RequestThrottledException ex) {
+            return false;
+        }
     }
 }
