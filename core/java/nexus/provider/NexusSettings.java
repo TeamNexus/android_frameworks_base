@@ -116,6 +116,12 @@ public final class NexusSettings {
     public static final String SCREEN_DIM_DURATION = "screen_dim_duration";
 
     /**
+     * Whether to scramble a pin unlock layout
+     * @hide
+     */
+    public static final String SCRAMBLE_PIN_LAYOUT = "lockscreen_scramble_pin_layout";
+
+    /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
      * the current user is not 0, returning a default value if no stored value
      * was found

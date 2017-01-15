@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -29,6 +30,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.android.internal.widget.LockPatternUtils;
+
+import nexus.provider.NexusSettings;
 
 public class NumPadKey extends ViewGroup {
     // list of "ABC", etc per digit, starting with '0'
@@ -101,27 +104,37 @@ public class NumPadKey extends ViewGroup {
         mDigitText.setText(Integer.toString(mDigit));
         mKlondikeText = (TextView) findViewById(R.id.klondike_text);
 
+        updateText();
+        a = context.obtainStyledAttributes(attrs, android.R.styleable.View);
+        if (!a.hasValueOrEmpty(android.R.styleable.View_background)) {
+          setBackground(mContext.getDrawable(R.drawable.ripple_drawable));
+        }
+        a.recycle();
+        setContentDescription(mDigitText.getText().toString());
+    }
+
+    private void updateText() {
+        boolean scramblePin = NexusSettings.getBoolForCurrentUser(getContext(), NexusSettings.SCRAMBLE_PIN_LAYOUT, false);
         if (mDigit >= 0) {
+            mDigitText.setText(Integer.toString(mDigit));
             if (sKlondike == null) {
                 sKlondike = getResources().getStringArray(R.array.lockscreen_num_pad_klondike);
             }
             if (sKlondike != null && sKlondike.length > mDigit) {
                 String klondike = sKlondike[mDigit];
                 final int len = klondike.length();
-                if (len > 0) {
+                if (len > 0 || scramblePin) {
                     mKlondikeText.setText(klondike);
                 } else {
                     mKlondikeText.setVisibility(View.INVISIBLE);
                 }
             }
         }
+    }
 
-        a = context.obtainStyledAttributes(attrs, android.R.styleable.View);
-        if (!a.hasValueOrEmpty(android.R.styleable.View_background)) {
-            setBackground(mContext.getDrawable(R.drawable.ripple_drawable));
-        }
-        a.recycle();
-        setContentDescription(mDigitText.getText().toString());
+    public void setDigit(int digit) {
+        mDigit = digit;
+        updateText();
     }
 
     @Override
