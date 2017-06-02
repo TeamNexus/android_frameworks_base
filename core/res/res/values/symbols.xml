@@ -3079,4 +3079,7 @@
 
   <java-symbol type="integer" name="config_stableDeviceDisplayWidth" />
   <java-symbol type="integer" name="config_stableDeviceDisplayHeight" />
+
+  <!-- Whether light up buttons only when pressed -->
+  <java-symbol type="bool" name="config_buttonLightOnKeypressOnly" />
 </resources>
