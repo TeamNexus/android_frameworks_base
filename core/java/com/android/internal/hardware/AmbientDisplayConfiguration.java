@@ -20,6 +20,7 @@ import com.android.internal.R;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
 
@@ -29,6 +30,10 @@ public class AmbientDisplayConfiguration {
 
     public AmbientDisplayConfiguration(Context context) {
         mContext = context;
+    }
+
+    public boolean enabledForCurrentUser() {
+        return enabled(UserHandle.USER_CURRENT);
     }
 
     public boolean enabled(int user) {
