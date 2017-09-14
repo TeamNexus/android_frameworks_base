@@ -2932,4 +2932,7 @@
 
     <!-- Whether to persist the notification for when a usb drive device is plugged in -->
     <bool name="config_persistUsbDriveNotification">false</bool>
+
+    <!-- Choose doze as power-action if Ambient Display or Always-On-Display is activated, else don't doze -->
+    <bool name="config_dozeOnlyOnAmbientOrAlwaysOn">true</bool>
 </resources>
