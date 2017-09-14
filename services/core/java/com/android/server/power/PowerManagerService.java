@@ -115,6 +115,12 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.CRITICAL_DREAMING_BATTERY_PERCENTAGE;
+import static nexus.provider.NexusSettings.TOUCHKEYS_ENABLED;
+import static nexus.provider.NexusSettings.TOUCHKEYS_BACKLIGHT_DIRECT_ONLY;
+import static nexus.provider.NexusSettings.TOUCHKEYS_BACKLIGHT_TIMEOUT;
+
 /**
  * The power manager service is responsible for coordinating power management
  * functions on the device.
@@ -568,6 +574,9 @@ public final class PowerManagerService extends SystemService
     // True if we are currently in VR Mode.
     private boolean mIsVrModeEnabled;
 
+    // True if last interaction was a touchkey-press
+    private boolean mTouchkeyPressed;
+
     /**
      * All times are in milliseconds. These constants are kept synchronized with the system
      * global Settings. Any access to this class or its fields should be done while
@@ -629,6 +638,51 @@ public final class PowerManagerService extends SystemService
             proto.write(PowerServiceDumpProto.ConstantsProto.IS_NO_CACHED_WAKE_LOCKS,
                     NO_CACHED_WAKE_LOCKS);
             proto.end(constantsToken);
+        }
+    }
+
+    class NexusSettingsObserver extends ContentObserver {
+        NexusSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            // Observe all users' changes
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    CRITICAL_DREAMING_BATTERY_PERCENTAGE), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    TOUCHKEYS_ENABLED), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    TOUCHKEYS_BACKLIGHT_DIRECT_ONLY), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    TOUCHKEYS_BACKLIGHT_TIMEOUT), false, this,
+                    UserHandle.USER_ALL);
+            updateNexusSettingsLocked();
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            updateNexusSettingsLocked();
+        }
+    }
+
+    private NexusSettingsObserver mNexusSettingsObserver;
+    private Object mNexusSettingsLock;
+    private int mCriticalDreamingBatteryPercentage;
+    private boolean mTouchkeysEnabled;
+    private boolean mTouchkeysBacklightDirectOnly;
+    private int mTouchkeysBacklightTimeout;
+
+    private void updateNexusSettingsLocked() {
+        synchronized (mNexusSettingsLock) {
+            mCriticalDreamingBatteryPercentage = NexusSettings.getIntForCurrentUser(mContext, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 5000);
+            mTouchkeysEnabled = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_ENABLED, true);
+            mTouchkeysBacklightDirectOnly = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
+            mTouchkeysBacklightTimeout = NexusSettings.getIntForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
         }
     }
 
@@ -762,6 +816,8 @@ public final class PowerManagerService extends SystemService
                     createSuspendBlockerLocked("PowerManagerService.WirelessChargerDetector"),
                     mHandler);
             mSettingsObserver = new SettingsObserver(mHandler);
+            mNexusSettingsObserver = new NexusSettingsObserver(mHandler);
+            mNexusSettingsLock = new Object();
 
             mLightsManager = getLocalService(LightsManager.class);
             mAttentionLight = mLightsManager.getLight(LightsManager.LIGHT_ID_ATTENTION);
@@ -843,6 +899,8 @@ public final class PowerManagerService extends SystemService
                 Slog.e(TAG, "Failed to register VR mode state listener: " + e);
             }
         }
+
+        mNexusSettingsObserver.observe();
 
         // Register for broadcasts from other components of the system.
         IntentFilter filter = new IntentFilter();
@@ -1401,12 +1459,13 @@ public final class PowerManagerService extends SystemService
                     return true;
                 }
             } else {
-                if (eventTime > mLastUserActivityTime) {
+                if (eventTime > mLastUserActivityTime) {					
                     mLastUserActivityTime = eventTime;
                     mDirty |= DIRTY_USER_ACTIVITY;
                     if (event == PowerManager.USER_ACTIVITY_EVENT_BUTTON) {
                         mDirty |= DIRTY_QUIESCENT;
                     }
+					mTouchkeyPressed = (event == PowerManager.USER_ACTIVITY_EVENT_BUTTON);
                     return true;
                 }
             }
@@ -1973,11 +2032,14 @@ public final class PowerManagerService extends SystemService
                     nextTimeout = mLastUserActivityTime
                             + screenOffTimeout - screenDimDuration;
                     if (now < nextTimeout) {
-                        if (now > mLastUserActivityTime + BUTTON_ON_DURATION) {
+                        if (now > mLastUserActivityTime + mTouchkeysBacklightTimeout) {
                             mButtonsLight.setBrightness(0);
                         } else {
-                            mButtonsLight.setBrightness(mDisplayPowerRequest.screenBrightness);
-                            nextTimeout = now + BUTTON_ON_DURATION;
+                            if (mTouchkeysEnabled && ((mTouchkeysBacklightDirectOnly && mTouchkeyPressed) || !mTouchkeysBacklightDirectOnly))
+                                mButtonsLight.setBrightness(mDisplayPowerRequest.screenBrightness);
+                            else
+                                mButtonsLight.setBrightness(0);
+                            nextTimeout = now + mTouchkeysBacklightTimeout;
                         }
                         mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;
                     } else {
@@ -2187,6 +2249,11 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    private void stopDreams() {
+        mDreamManager.stopDream(false /*immediate*/);
+        powerHintInternal(PowerHint.DREAMING_OR_DOZING, 0);
+    }
+
     /**
      * Called when the device enters or exits a dreaming or dozing state.
      *
@@ -2216,8 +2283,9 @@ public final class PowerManagerService extends SystemService
         if (mDreamManager != null) {
             // Restart the dream whenever the sandman is summoned.
             if (startDreaming) {
-                mDreamManager.stopDream(false /*immediate*/);
+                stopDreams();
                 mDreamManager.startDream(wakefulness == WAKEFULNESS_DOZING);
+                powerHintInternal(PowerHint.DREAMING_OR_DOZING, 1);
             }
             isDreaming = mDreamManager.isDreaming();
         } else {
@@ -2241,6 +2309,12 @@ public final class PowerManagerService extends SystemService
             if (mSandmanSummoned || mWakefulness != wakefulness) {
                 return; // wait for next cycle
             }
+
+            // keep keyboard/buttons dark if we are dreaming
+            if (wakefulness == WAKEFULNESS_DREAMING ||
+				wakefulness == WAKEFULNESS_DOZING) {
+				mButtonsLight.setBrightness(0);
+			}
 
             // Determine whether the dream should continue.
             if (wakefulness == WAKEFULNESS_DREAMING) {
@@ -2285,7 +2359,7 @@ public final class PowerManagerService extends SystemService
 
         // Stop dream.
         if (isDreaming) {
-            mDreamManager.stopDream(false /*immediate*/);
+            stopDreams();
         }
     }
 
@@ -2293,6 +2367,10 @@ public final class PowerManagerService extends SystemService
      * Returns true if the device is allowed to dream in its current state.
      */
     private boolean canDreamLocked() {
+        // update from user-settings
+        mDreamsBatteryLevelMinimumWhenNotPoweredConfig =
+                NexusSettings.getIntForCurrentUser(mContext, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 15);
+
         if (mWakefulness != WAKEFULNESS_DREAMING
                 || !mDreamsSupportedConfig
                 || !mDreamsEnabledSetting

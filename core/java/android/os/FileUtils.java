@@ -788,4 +788,33 @@ public class FileUtils {
         }
         return val * pow;
     }
+
+	public static boolean exists(String path) {
+		return new File(path).exists();
+	}
+
+	public static boolean isFile(String path) {
+		File f = new File(path);
+		return f.exists() && f.isFile();
+	}
+
+	public static boolean isDirectory(String path) {
+		File f = new File(path);
+		return f.exists() && !f.isFile();
+	}
+
+	public static boolean isAccessible(String path) {
+		File f = new File(path);
+		return f.exists() && f.canRead() && f.canWrite();
+	}
+
+	public static boolean isReadable(String path) {
+		File f = new File(path);
+		return f.exists() && f.canRead();
+	}
+
+	public static boolean isWriteable(String path) {
+		File f = new File(path);
+		return f.exists() && f.canWrite();
+	}
 }

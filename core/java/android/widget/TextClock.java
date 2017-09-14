@@ -30,13 +30,21 @@ import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.provider.Settings.Secure;
+import android.service.dreams.DreamService;
+import android.service.dreams.IDreamManager;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
 import android.view.RemotableViewMethod;
 import android.view.ViewHierarchyEncoder;
+
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.KEYGUARD_CLOCK_SHOW_SECONDS;
 
 import com.android.internal.R;
 
@@ -139,6 +147,9 @@ public class TextClock extends TextView {
     private String mTimeZone;
 
     private boolean mShowCurrentUserTime;
+    private boolean mIsKeyguardClockView;
+
+    private IDreamManager mDreamManager = null;
 
     private ContentObserver mFormatChangeObserver;
     private class FormatChangeObserver extends ContentObserver {
@@ -238,6 +249,9 @@ public class TextClock extends TextView {
             a.recycle();
         }
 
+        mDreamManager = IDreamManager.Stub.asInterface(
+                ServiceManager.getService(DreamService.DREAM_SERVICE));
+
         init();
     }
 
@@ -307,9 +321,7 @@ public class TextClock extends TextView {
     @RemotableViewMethod
     public void setFormat12Hour(CharSequence format) {
         mFormat12 = format;
-
-        chooseFormat();
-        onTimeChanged();
+        refresh();
     }
 
     /**
@@ -318,9 +330,7 @@ public class TextClock extends TextView {
      */
     public void setContentDescriptionFormat12Hour(CharSequence format) {
         mDescFormat12 = format;
-
-        chooseFormat();
-        onTimeChanged();
+        refresh();
     }
 
     /**
@@ -365,9 +375,7 @@ public class TextClock extends TextView {
     @RemotableViewMethod
     public void setFormat24Hour(CharSequence format) {
         mFormat24 = format;
-
-        chooseFormat();
-        onTimeChanged();
+        refresh();
     }
 
     /**
@@ -376,9 +384,7 @@ public class TextClock extends TextView {
      */
     public void setContentDescriptionFormat24Hour(CharSequence format) {
         mDescFormat24 = format;
-
-        chooseFormat();
-        onTimeChanged();
+        refresh();
     }
 
     /**
@@ -391,10 +397,21 @@ public class TextClock extends TextView {
     public void setShowCurrentUserTime(boolean showCurrentUserTime) {
         mShowCurrentUserTime = showCurrentUserTime;
 
-        chooseFormat();
-        onTimeChanged();
+        refresh();
         unregisterObserver();
         registerObserver();
+    }
+
+    /**
+     * Sets whether this clock should always track the current user and not the user of the
+     * current process. This is used for single instance processes like the systemUI who need
+     * to display time for different users.
+     *
+     * @hide
+     */
+    public void refresh() {
+        chooseFormat();
+        onTimeChanged();
     }
 
     /**
@@ -471,6 +488,16 @@ public class TextClock extends TextView {
     }
 
     /**
+     * If this clock is created by the keyguard, this functions should be
+     * called with "true" as parameter to properly managed the "show second"-setting
+     *
+     * @hide
+     */
+    public void setIsKeyguardClockView(boolean isKeyguardClockView) {
+        mIsKeyguardClockView = isKeyguardClockView;
+    }
+
+    /**
      * Selects either one of {@link #getFormat12Hour()} or {@link #getFormat24Hour()}
      * depending on whether the user has selected 24-hour format.
      */
@@ -481,10 +508,28 @@ public class TextClock extends TextView {
 
         if (format24Requested) {
             mFormat = abc(mFormat24, mFormat12, ld.timeFormat_Hm);
-            mDescFormat = abc(mDescFormat24, mDescFormat12, mFormat);
+            mDescFormat = abc(mDescFormat24, mDescFormat12, ld.mediumDateFormat);
         } else {
             mFormat = abc(mFormat12, mFormat24, ld.timeFormat_hm);
-            mDescFormat = abc(mDescFormat12, mDescFormat24, mFormat);
+            mDescFormat = abc(mDescFormat12, mDescFormat24, ld.mediumDateFormat);
+        }
+
+        if (mIsKeyguardClockView) {
+            int showSecondsType = NexusSettings.getIntForCurrentUser(getContext(), KEYGUARD_CLOCK_SHOW_SECONDS, 0);
+            boolean isDozing = false;
+            try {
+                isDozing = (mDreamManager != null && mDreamManager.isDreaming());
+            } catch (RemoteException ex) {
+                ex.printStackTrace();
+            }
+
+            if (showSecondsType != 0) {
+                if (showSecondsType == 3
+                        || (showSecondsType == 1 && !isDozing)
+                        || (showSecondsType == 2 && isDozing)) {
+                    mFormat = new String(mFormat + ":ss");
+                }
+            }
         }
 
         boolean hadSeconds = mHasSeconds;
@@ -597,6 +642,9 @@ public class TextClock extends TextView {
     private void onTimeChanged() {
         // mShouldRunTicker always equals the last value passed into onVisibilityAggregated
         if (mShouldRunTicker) {
+            // do not call refresh(); as it would lead to a infinite loop (refresh() -> onTimeChanged() -> refresh() -> ...)
+            chooseFormat();
+
             mTime.setTimeInMillis(System.currentTimeMillis());
             setText(DateFormat.format(mFormat, mTime));
             setContentDescription(DateFormat.format(mDescFormat, mTime));

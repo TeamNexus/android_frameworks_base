@@ -20,8 +20,11 @@ import com.android.internal.R;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
+
+import nexus.hardware.AmbientDisplay;
 
 public class AmbientDisplayConfiguration {
 
@@ -29,6 +32,10 @@ public class AmbientDisplayConfiguration {
 
     public AmbientDisplayConfiguration(Context context) {
         mContext = context;
+    }
+
+    public boolean enabledForCurrentUser() {
+        return enabled(UserHandle.USER_CURRENT);
     }
 
     public boolean enabled(int user) {
@@ -80,9 +87,7 @@ public class AmbientDisplayConfiguration {
     }
 
     public boolean alwaysOnAvailable() {
-        boolean enableDozeAlwaysOn = mContext.getResources().
-                getBoolean(com.android.internal.R.bool.config_enableDozeAlwaysOn);
-        return enableDozeAlwaysOn;
+       return !TextUtils.isEmpty(ambientDisplayComponent()) && AmbientDisplay.supportsAlwaysOnDisplay();
     }
 
     public String ambientDisplayComponent() {
@@ -90,7 +95,7 @@ public class AmbientDisplayConfiguration {
     }
 
     private boolean ambientDisplayAvailable() {
-        return !TextUtils.isEmpty(ambientDisplayComponent());
+        return !TextUtils.isEmpty(ambientDisplayComponent()) && AmbientDisplay.supportsAmbientDisplay();
     }
 
     private boolean boolSettingDefaultOn(String name, int user) {
