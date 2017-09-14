@@ -231,6 +231,7 @@ import android.view.inputmethod.InputMethodManagerInternal;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.hardware.AmbientDisplayConfiguration;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.os.DeviceKeyHandler;
 import com.android.internal.policy.IKeyguardDismissCallback;
@@ -579,6 +580,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mHasSoftInput = false;
     boolean mTranslucentDecorEnabled = true;
     boolean mUseTvRouting;
+    boolean mDozeOnlyOnAmbientOrAlwaysOn;
 
     private boolean mHandleVolumeKeysInWM;
 
@@ -1436,7 +1438,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } else if (count == 3) {
             powerMultiPressAction(eventTime, interactive, mTriplePressOnPowerBehavior);
         } else if (interactive && !mBeganFromNonInteractive) {
-            switch (mShortPressOnPowerBehavior) {
+            int behavior = mShortPressOnPowerBehavior;
+
+            if (mDozeOnlyOnAmbientOrAlwaysOn) {
+                if (new AmbientDisplayConfiguration(mContext).enabledForCurrentUser()) {
+                    behavior = SHORT_PRESS_POWER_GO_TO_SLEEP;
+                } else {
+                    behavior = SHORT_PRESS_POWER_REALLY_GO_TO_SLEEP;
+                }
+            }
+
+            switch (behavior) {
                 case SHORT_PRESS_POWER_NOTHING:
                     break;
                 case SHORT_PRESS_POWER_GO_TO_SLEEP:
@@ -2016,6 +2028,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         mHandleVolumeKeysInWM = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_handleVolumeKeysInWindowManager);
+
+        mDozeOnlyOnAmbientOrAlwaysOn = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_dozeOnlyOnAmbientOrAlwaysOn);
 
         readConfigurationDependentBehaviors();
 
