@@ -7309,6 +7309,98 @@ public final class Settings {
                 }
             }
         }
+
+        /**
+         * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
+         * the current user is not 0, returning a default value if no stored value
+         * was found
+         *
+         * @param context the context to use
+         * @param name name of the setting to find
+         * @param def the default value if no setting was found
+         * @return return stored boolean/def is nothing was found
+         */
+        public static final boolean getBoolForCurrentUser(Context context, String name, boolean def) {
+            return Settings.Secure.getIntForCurrentUser(context, name, def ? 1 : 0) != 0;
+        }
+
+        /**
+         * Wrapper for putIntForCurrentUser(). Saves the value with to the passed
+         * name for the current user
+         *
+         * @param context the context to use
+         * @param name name of the setting to update
+         * @param value the new value of the setting
+         */
+        public static final void putBoolForCurrentUser(Context context, String name, boolean value) {
+            Settings.Secure.putIntForCurrentUser(context, name, value ? 1 : 0);
+        }
+
+        /**
+         * Wrapper for getIntForUser(). Returns the requested setting for
+         * the current user, returning a default value if no stored value
+         * was found
+         *
+         * @param context the context to use
+         * @param name name of the setting to find
+         * @param def the default value if no setting was found
+         * @return return stored integer/def is nothing was found
+         */
+        public static final int getIntForCurrentUser(Context context, String name, int def) {
+            return Settings.Secure.getIntForUser(
+                    context.getContentResolver(),
+                    name,
+                    def,
+                    UserHandle.USER_CURRENT);
+        }
+
+        /**
+         * Wrapper for putIntForUser(). Saves the value with to the passed
+         * name for the current user
+         *
+         * @param context the context to use
+         * @param name name of the setting to update
+         * @param value the new value of the setting
+         */
+        public static final void putIntForCurrentUser(Context context, String name, int value) {
+            Settings.Secure.putIntForUser(
+                    context.getContentResolver(),
+                    name,
+                    value,
+                    UserHandle.USER_CURRENT);
+        }
+
+        /**
+         * Wrapper for getStringForUser(). Returns the requested setting for
+         * the current user, returning a default value if no stored value
+         * was found
+         *
+         * @param context the context to use
+         * @param name name of the setting to find
+         * @return return stored string
+         */
+        public static final String getStringForCurrentUser(Context context, String name) {
+            return Settings.Secure.getStringForUser(
+                    context.getContentResolver(),
+                    name,
+                    UserHandle.USER_CURRENT);
+        }
+
+        /**
+         * Wrapper for putStringForUser(). Saves the value with to the passed
+         * name for the current user
+         *
+         * @param context the context to use
+         * @param name name of the setting to update
+         * @param value the new value of the setting
+         */
+        public static final void putStringForCurrentUser(Context context, String name, String value) {
+            Settings.Secure.putStringForUser(
+                    context.getContentResolver(),
+                    name,
+                    value,
+                    UserHandle.USER_CURRENT);
+        }
     }
 
     /**
