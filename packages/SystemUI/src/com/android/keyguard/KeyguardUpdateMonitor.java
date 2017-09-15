@@ -57,6 +57,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.telephony.ServiceState;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -66,6 +67,8 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
+
+import static android.provider.Settings.Secure.FINGERPRINT_UNLOCK_AFTER_REBOOT;
 
 import com.google.android.collect.Lists;
 
@@ -597,7 +600,11 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
     }
 
     public boolean isUnlockingWithFingerprintAllowed() {
-        return mStrongAuthTracker.isUnlockingWithFingerprintAllowed();
+        boolean fingerprint_unlock_after_reboot =
+                Settings.Secure.getBoolForCurrentUser(mContext, FINGERPRINT_UNLOCK_AFTER_REBOOT, false);
+
+        return mStrongAuthTracker.isUnlockingWithFingerprintAllowed()
+                    || fingerprint_unlock_after_reboot;
     }
 
     public boolean needsSlowUnlockTransition() {
