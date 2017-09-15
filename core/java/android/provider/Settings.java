@@ -6971,6 +6971,13 @@ public final class Settings {
         public static final String NOTIFICATION_BADGING = "notification_badging";
 
         /**
+         * Battery-Percentage at which Ambient Display/Always-On-Display have to be disabled
+         * The value is any between between 0 and 100
+         * @hide
+         */
+        public static final String CRITICAL_DREAMING_BATTERY_PERCENTAGE = "critical_dreaming_battery_percentage";
+
+        /**
          * This are the settings to be backed up.
          *
          * NOTE: Settings are backed up and restored in the order they appear
