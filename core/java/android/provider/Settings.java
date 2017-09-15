@@ -6978,6 +6978,12 @@ public final class Settings {
         public static final String CRITICAL_DREAMING_BATTERY_PERCENTAGE = "critical_dreaming_battery_percentage";
 
         /**
+         * Whether user can unlock the device with the fingerprint
+         * @hide
+         */
+        public static final String FINGERPRINT_UNLOCK_AFTER_REBOOT = "fingerprint_unlock_after_reboot";
+
+        /**
          * This are the settings to be backed up.
          *
          * NOTE: Settings are backed up and restored in the order they appear
