@@ -119,6 +119,7 @@ public class KeyguardStatusView extends GridLayout {
         mAlarmStatusView = findViewById(R.id.alarm_status);
         mDateView = findViewById(R.id.date_view);
         mClockView = findViewById(R.id.clock_view);
+        mClockView.setIsKeyguardClockView(true);
         mClockView.setShowCurrentUserTime(true);
         mClockView.setAccessibilityDelegate(new KeyguardClockAccessibilityDelegate(mContext));
         mOwnerInfo = findViewById(R.id.owner_info);
@@ -294,6 +295,7 @@ public class KeyguardStatusView extends GridLayout {
         }
         updateDozeVisibleViews();
         mBatteryDoze.setDark(dark);
+        mClockView.refresh();
     }
 
     public void setPulsing(boolean pulsing) {
