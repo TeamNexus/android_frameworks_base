@@ -7364,7 +7364,7 @@ public final class Settings {
                     context.getContentResolver(),
                     name,
                     def,
-                    UserHandle.USER_CURRENT);
+                    UserHandle.myUserId());
         }
 
         /**
@@ -7380,7 +7380,7 @@ public final class Settings {
                     context.getContentResolver(),
                     name,
                     value,
-                    UserHandle.USER_CURRENT);
+                    UserHandle.myUserId());
         }
 
         /**
@@ -7396,7 +7396,7 @@ public final class Settings {
             return Settings.Secure.getStringForUser(
                     context.getContentResolver(),
                     name,
-                    UserHandle.USER_CURRENT);
+                    UserHandle.myUserId());
         }
 
         /**
@@ -7412,7 +7412,7 @@ public final class Settings {
                     context.getContentResolver(),
                     name,
                     value,
-                    UserHandle.USER_CURRENT);
+                    UserHandle.myUserId());
         }
     }
 
