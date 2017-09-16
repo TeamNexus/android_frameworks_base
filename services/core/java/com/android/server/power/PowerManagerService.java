@@ -2147,6 +2147,11 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    private void stopDreams() {
+        mDreamManager.stopDream(false /*immediate*/);
+        powerHintInternal(PowerHint.DREAMING_OR_DOZING, 0);
+    }
+
     /**
      * Called when the device enters or exits a dreaming or dozing state.
      *
@@ -2172,12 +2177,12 @@ public final class PowerManagerService extends SystemService
                 startDreaming = false;
             }
         }
-        
+
         // stop dreaming if battery-precentage falls below a critical level
         if (!mIsPowered
                 && mDreamsBatteryLevelMinimumWhenNotPoweredConfig >= 0
                 && mBatteryLevel < mDreamsBatteryLevelMinimumWhenNotPoweredConfig) {
-            mDreamManager.stopDream(false /*immediate*/);
+            stopDreams();
             return;
         }
 
@@ -2188,8 +2193,9 @@ public final class PowerManagerService extends SystemService
         if (mDreamManager != null) {
             // Restart the dream whenever the sandman is summoned.
             if (startDreaming) {
-                mDreamManager.stopDream(false /*immediate*/);
+                stopDreams();
                 mDreamManager.startDream(wakefulness == WAKEFULNESS_DOZING);
+                powerHintInternal(PowerHint.DREAMING_OR_DOZING, 1);
             }
             isDreaming = mDreamManager.isDreaming();
         } else {
@@ -2263,7 +2269,7 @@ public final class PowerManagerService extends SystemService
 
         // Stop dream.
         if (isDreaming) {
-            mDreamManager.stopDream(false /*immediate*/);
+            stopDreams();
         }
     }
 
