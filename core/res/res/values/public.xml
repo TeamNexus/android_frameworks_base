@@ -2837,6 +2837,10 @@
     <public-group type="string" first-id="0x0104001a">
     </public-group>
 
+    <public-group type="drawable" first-id="0x010800b4">
+        <public name="ic_lock_settings" />
+    </public-group>
+
   <!-- ===============================================================
        DO NOT ADD UN-GROUPED ITEMS HERE
 
