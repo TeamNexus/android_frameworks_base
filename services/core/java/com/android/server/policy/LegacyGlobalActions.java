@@ -476,7 +476,7 @@ class LegacyGlobalActions implements DialogInterface.OnDismissListener, DialogIn
     }
 
     private Action getSettingsAction() {
-        return new SinglePressAction(com.android.internal.R.drawable.ic_settings,
+        return new SinglePressAction(com.android.internal.R.drawable.ic_lock_settings,
                 R.string.global_action_settings) {
 
             @Override
