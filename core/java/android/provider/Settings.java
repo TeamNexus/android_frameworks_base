@@ -6983,6 +6983,18 @@ public final class Settings {
         public static final String KEYGUARD_CLOCK_SHOW_SECONDS = "keyguard_clock_show_seconds";
 
         /**
+         * Current mode of the mDNIe-engine
+         * @hide
+         */
+        public static final String MDNIE_MODE = "mdnie_mode";
+
+        /**
+         * Current scenario of the mDNIe-engine
+         * @hide
+         */
+        public static final String MDNIE_SCENARIO = "mdnie_scenario";
+
+        /**
          * This are the settings to be backed up.
          *
          * NOTE: Settings are backed up and restored in the order they appear
