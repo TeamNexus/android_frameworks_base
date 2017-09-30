@@ -6995,6 +6995,24 @@ public final class Settings {
         public static final String MDNIE_SCENARIO = "mdnie_scenario";
 
         /**
+         * Red-value of custom color-space correction
+         * @hide
+         */
+        public static final String MDNIE_COLOR_CORRECTION_RED = "mdnie_color_correction_red";
+
+        /**
+         * Green-value of custom color-space correction
+         * @hide
+         */
+        public static final String MDNIE_COLOR_CORRECTION_GREEN = "mdnie_color_correction_green";
+
+        /**
+         * Blue-value of custom color-space correction
+         * @hide
+         */
+        public static final String MDNIE_COLOR_CORRECTION_BLUE = "mdnie_color_correction_blue";
+
+        /**
          * This are the settings to be backed up.
          *
          * NOTE: Settings are backed up and restored in the order they appear
