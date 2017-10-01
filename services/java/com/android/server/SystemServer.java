@@ -113,6 +113,8 @@ import com.android.server.vr.VrManagerService;
 import com.android.server.webkit.WebViewUpdateService;
 import com.android.server.wm.WindowManagerService;
 
+import com.nexus.server.NexusOSService;
+
 import dalvik.system.VMRuntime;
 
 import java.io.File;
@@ -877,6 +879,10 @@ public final class SystemServer {
 
             traceBeginAndSlog("PinnerService");
             mSystemServiceManager.startService(PinnerService.class);
+            traceEnd();
+
+            traceBeginAndSlog("NexusOSService");
+            mSystemServiceManager.startService(NexusOSService.class);
             traceEnd();
         } catch (RuntimeException e) {
             Slog.e("System", "******************************************");
