@@ -2200,10 +2200,6 @@ public final class PowerManagerService extends SystemService
      * the device will wake or go to sleep in the meantime so we have to handle that case.
      */
     private void handleSandman() { // runs on handler thread
-        // update from user-settings
-        mDreamsBatteryLevelMinimumWhenNotPoweredConfig =
-                Settings.Secure.getIntForCurrentUser(mContext, Settings.Secure.CRITICAL_DREAMING_BATTERY_PERCENTAGE, 15);
-
         // Handle preconditions.
         final boolean startDreaming;
         final int wakefulness;
@@ -2216,14 +2212,6 @@ public final class PowerManagerService extends SystemService
             } else {
                 startDreaming = false;
             }
-        }
-
-        // stop dreaming if battery-precentage falls below a critical level
-        if (!mIsPowered
-                && mDreamsBatteryLevelMinimumWhenNotPoweredConfig >= 0
-                && mBatteryLevel < mDreamsBatteryLevelMinimumWhenNotPoweredConfig) {
-            stopDreams();
-            return;
         }
 
         // Start dreaming if needed.
