@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.provider;
+package nexus.provider;
 
 import android.annotation.SystemApi;
 import android.annotation.RequiresPermission;
@@ -62,7 +62,7 @@ public class ApplicationSettings {
     @SystemApi
 	public boolean getBoolean(String pref, boolean def) {
 		assertPref(pref);
-		return Settings.Secure.getBoolForCurrentUser(mContext, mPrefPrefix + pref, def);
+		return NexusSettings.getBoolForCurrentUser(mContext, mPrefPrefix + pref, def);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class ApplicationSettings {
     @SystemApi
 	public int getInt(String pref, int def) {
 		assertPref(pref);
-		return Settings.Secure.getIntForCurrentUser(mContext, mPrefPrefix + pref, def);
+		return NexusSettings.getIntForCurrentUser(mContext, mPrefPrefix + pref, def);
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class ApplicationSettings {
     @SystemApi
 	public String getString(String pref, String def) {
 		assertPref(pref);
-		String ret = Settings.Secure.getStringForCurrentUser(mContext, mPrefPrefix + pref);
+		String ret = NexusSettings.getStringForCurrentUser(mContext, mPrefPrefix + pref);
 		if (ret == null || ret.equals(""))
 			return def;
 		return ret;
@@ -93,7 +93,7 @@ public class ApplicationSettings {
 	@RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
 	public void putBoolean(String pref, boolean value) {
 		assertPref(pref);
-		Settings.Secure.putBoolForCurrentUser(mContext, mPrefPrefix + pref, value);
+		NexusSettings.putBoolForCurrentUser(mContext, mPrefPrefix + pref, value);
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class ApplicationSettings {
 	@RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
 	public void putInt(String pref, int value) {
 		assertPref(pref);
-		Settings.Secure.putIntForCurrentUser(mContext, mPrefPrefix + pref, value);
+		NexusSettings.putIntForCurrentUser(mContext, mPrefPrefix + pref, value);
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class ApplicationSettings {
 	@RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)
 	public void putString(String pref, String value) {
 		assertPref(pref);
-		Settings.Secure.putStringForCurrentUser(mContext, mPrefPrefix + pref, value);
+		NexusSettings.putStringForCurrentUser(mContext, mPrefPrefix + pref, value);
 	}
 
 	private void assertPref(String pref) {

@@ -21,11 +21,12 @@ import android.os.FileUtils;
 import android.provider.Settings;
 import android.util.Log;
 
-import static android.provider.Settings.Secure.MDNIE_MODE;
-import static android.provider.Settings.Secure.MDNIE_SCENARIO;
-import static android.provider.Settings.Secure.MDNIE_COLOR_CORRECTION_RED;
-import static android.provider.Settings.Secure.MDNIE_COLOR_CORRECTION_GREEN;
-import static android.provider.Settings.Secure.MDNIE_COLOR_CORRECTION_BLUE;
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.MDNIE_MODE;
+import static nexus.provider.NexusSettings.MDNIE_SCENARIO;
+import static nexus.provider.NexusSettings.MDNIE_COLOR_CORRECTION_RED;
+import static nexus.provider.NexusSettings.MDNIE_COLOR_CORRECTION_GREEN;
+import static nexus.provider.NexusSettings.MDNIE_COLOR_CORRECTION_BLUE;
 
 import java.io.IOException;
 
@@ -56,7 +57,7 @@ public class MdnieManager {
         Log.i(TAG, "applyMdnieMode");
         try {
             FileUtils.stringToFile(PATH_MDNIE_MODE,
-                    String.valueOf(Settings.Secure.getIntForCurrentUser(mContext, MDNIE_MODE, 0)));
+                    String.valueOf(NexusSettings.getIntForCurrentUser(mContext, MDNIE_MODE, 0)));
         } catch (IOException e) { }
     }
 
@@ -64,7 +65,7 @@ public class MdnieManager {
         Log.i(TAG, "applyMdnieScenario");
         try {
             FileUtils.stringToFile(PATH_MDNIE_SCENARIO,
-                    String.valueOf(Settings.Secure.getIntForCurrentUser(mContext, MDNIE_SCENARIO, 0)));
+                    String.valueOf(NexusSettings.getIntForCurrentUser(mContext, MDNIE_SCENARIO, 0)));
         } catch (IOException e) { }
     }
 
@@ -72,9 +73,9 @@ public class MdnieManager {
         Log.i(TAG, "applyMdnieSensorRGB");
         try {
             FileUtils.stringToFile(PATH_MDNIE_SENSORRGB,
-                    Settings.Secure.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_RED, 255) + " " +
-                    Settings.Secure.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_GREEN, 255) + " " +
-                    Settings.Secure.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_BLUE, 255) + "\n");
+                    NexusSettings.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_RED, 255) + " " +
+                    NexusSettings.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_GREEN, 255) + " " +
+                    NexusSettings.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_BLUE, 255) + "\n");
         } catch (IOException e) { }
     }
 

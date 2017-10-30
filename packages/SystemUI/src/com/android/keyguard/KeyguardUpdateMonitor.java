@@ -72,8 +72,6 @@ import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 
-import static android.provider.Settings.Secure.FINGERPRINT_UNLOCK_AFTER_REBOOT;
-
 import com.google.android.collect.Lists;
 
 import com.android.internal.telephony.IccCardConstants;
@@ -89,6 +87,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.FINGERPRINT_UNLOCK_AFTER_REBOOT;
 
 /**
  * Watches for updates that may be interesting to the keyguard, and provides
@@ -613,7 +614,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
 
     public boolean isUnlockingWithFingerprintAllowed() {
         boolean fingerprint_unlock_after_reboot =
-                Settings.Secure.getBoolForCurrentUser(mContext, FINGERPRINT_UNLOCK_AFTER_REBOOT, false);
+                NexusSettings.getBoolForCurrentUser(mContext, FINGERPRINT_UNLOCK_AFTER_REBOOT, false);
 
         return mStrongAuthTracker.isUnlockingWithFingerprintAllowed()
                     || fingerprint_unlock_after_reboot;

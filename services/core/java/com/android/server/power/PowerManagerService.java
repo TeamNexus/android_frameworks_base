@@ -115,6 +115,9 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.CRITICAL_DREAMING_BATTERY_PERCENTAGE;
+
 /**
  * The power manager service is responsible for coordinating power management
  * functions on the device.
@@ -2307,7 +2310,7 @@ public final class PowerManagerService extends SystemService
     private boolean canDreamLocked() {
         // update from user-settings
         mDreamsBatteryLevelMinimumWhenNotPoweredConfig =
-                Settings.Secure.getIntForCurrentUser(mContext, Settings.Secure.CRITICAL_DREAMING_BATTERY_PERCENTAGE, 15);
+                NexusSettings.getIntForCurrentUser(mContext, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 15);
 
         if (mWakefulness != WAKEFULNESS_DREAMING
                 || !mDreamsSupportedConfig

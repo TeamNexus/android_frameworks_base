@@ -43,7 +43,8 @@ import android.util.AttributeSet;
 import android.view.RemotableViewMethod;
 import android.view.ViewHierarchyEncoder;
 
-import static android.provider.Settings.Secure.KEYGUARD_CLOCK_SHOW_SECONDS;
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.KEYGUARD_CLOCK_SHOW_SECONDS;
 
 import com.android.internal.R;
 
@@ -514,7 +515,7 @@ public class TextClock extends TextView {
         }
 
         if (mIsKeyguardClockView) {
-            int showSecondsType = Settings.Secure.getIntForCurrentUser(getContext(), KEYGUARD_CLOCK_SHOW_SECONDS, 0);
+            int showSecondsType = NexusSettings.getIntForCurrentUser(getContext(), KEYGUARD_CLOCK_SHOW_SECONDS, 0);
             boolean isDozing = false;
             try {
                 isDozing = (mDreamManager != null && mDreamManager.isDreaming());
