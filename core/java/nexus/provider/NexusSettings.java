@@ -31,7 +31,7 @@ public final class NexusSettings {
 	 * settings set by the user.
      * @hide
      */
-    private static final String NEXUS_SETTINGS_PREFIX = "nexus::";
+    public static final String NEXUS_SETTINGS_PREFIX = "nexus::";
 
     /**
      * Value used to indicates if the default settings have already been applied
@@ -309,20 +309,32 @@ public final class NexusSettings {
     }
 
     /**
-     * @hide
+     * Checks if the given setting was set for the current user
+     *
+     * @param context the context to use
+     * @param name name of the setting to check
      */
-	public static final void applyDefaultSettings(Context context) {
-		putIntForCurrentUser(context, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 25);
-		putBoolForCurrentUser(context, FINGERPRINT_UNLOCK_AFTER_REBOOT, false);
-		putIntForCurrentUser(context, KEYGUARD_CLOCK_SHOW_SECONDS, 3);
-		putIntForCurrentUser(context, MDNIE_MODE, 4);
-		putIntForCurrentUser(context, MDNIE_SCENARIO, 0);
-		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_RED, 255);
-		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_GREEN, 255);
-		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_BLUE, 255);
-		putBoolForCurrentUser(context, TOUCHKEYS_ENABLED, true);
-		putBoolForCurrentUser(context, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
-		putIntForCurrentUser(context, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
-	}
+    public static final boolean existsForCurrentUser(Context context, String name) {
+        String result = Settings.Secure.getStringForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                UserHandle.myUserId());
+		return result != null;
+    }
+
+    /**
+     * Checks if the given setting was set for the given user
+     *
+     * @param context the context to use
+     * @param name name of the setting to check
+     * @param user ID of the user
+     */
+    public static final boolean existsForUser(Context context, String name, int user) {
+        String result = Settings.Secure.getStringForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                user);
+		return result != null;
+    }
 	
 }

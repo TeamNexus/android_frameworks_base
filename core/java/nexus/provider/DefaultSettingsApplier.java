@@ -29,25 +29,32 @@ public final class DefaultSettingsApplier {
      * @hide
      */
     public static final void tryApply(final Context context, final int user) {
-        boolean defaultSettingsApplied = NexusSettings.getBoolForUser(context, NexusSettings.DEFAULT_SETTINGS_APPLIED, false, user);
-        if (!defaultSettingsApplied) {
-            NexusSettings.putBoolForUser(context, NexusSettings.DEFAULT_SETTINGS_APPLIED, true, user);
-            applyDefaultSettings(context, user);
-        }
+        putDefaultIntForUser(context, NexusSettings.CRITICAL_DREAMING_BATTERY_PERCENTAGE, 25, user);
+        putDefaultBoolForUser(context, NexusSettings.FINGERPRINT_UNLOCK_AFTER_REBOOT, false, user);
+        putDefaultIntForUser(context, NexusSettings.KEYGUARD_CLOCK_SHOW_SECONDS, 3, user);
+        putDefaultIntForUser(context, NexusSettings.MDNIE_MODE, 4, user);
+        putDefaultIntForUser(context, NexusSettings.MDNIE_SCENARIO, 0, user);
+        putDefaultIntForUser(context, NexusSettings.MDNIE_COLOR_CORRECTION_RED, 255, user);
+        putDefaultIntForUser(context, NexusSettings.MDNIE_COLOR_CORRECTION_GREEN, 255, user);
+        putDefaultIntForUser(context, NexusSettings.MDNIE_COLOR_CORRECTION_BLUE, 255, user);
+        putDefaultBoolForUser(context, NexusSettings.TOUCHKEYS_ENABLED, true, user);
+        putDefaultBoolForUser(context, NexusSettings.TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true, user);
+        putDefaultIntForUser(context, NexusSettings.TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000, user);
     }
 
-    /**
-     * @hide
-     */
-    private static final void applyDefaultSettings(final Context context, final int user) {
-        NexusSettings.putIntForUser(context, NexusSettings.CRITICAL_DREAMING_BATTERY_PERCENTAGE, 25, user);
-        NexusSettings.putBoolForUser(context, NexusSettings.FINGERPRINT_UNLOCK_AFTER_REBOOT, false, user);
-        NexusSettings.putIntForUser(context, NexusSettings.KEYGUARD_CLOCK_SHOW_SECONDS, 3, user);
-        NexusSettings.putIntForUser(context, NexusSettings.MDNIE_MODE, 4, user);
-        NexusSettings.putIntForUser(context, NexusSettings.MDNIE_SCENARIO, 0, user);
-        NexusSettings.putIntForUser(context, NexusSettings.MDNIE_COLOR_CORRECTION_RED, 255, user);
-        NexusSettings.putIntForUser(context, NexusSettings.MDNIE_COLOR_CORRECTION_GREEN, 255, user);
-        NexusSettings.putIntForUser(context, NexusSettings.MDNIE_COLOR_CORRECTION_BLUE, 255, user);
+    private static final void putDefaultBoolForUser(final Context context, String name, boolean value, final int user) {
+        if (!NexusSettings.existsForUser(context, name, user))
+			NexusSettings.putBoolForUser(context, name, value, user);
+    }
+
+    private static final void putDefaultIntForUser(final Context context, String name, int value, final int user) {
+        if (!NexusSettings.existsForUser(context, name, user))
+			NexusSettings.putIntForUser(context, name, value, user);
+    }
+
+    private static final void putDefaultStringForUser(final Context context, String name, String value, final int user) {
+        if (!NexusSettings.existsForUser(context, name, user))
+			NexusSettings.putStringForUser(context, name, value, user);
     }
 
 }
