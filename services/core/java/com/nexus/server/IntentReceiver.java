@@ -35,6 +35,7 @@ class IntentReceiver extends BroadcastReceiver {
 
         filter.addAction(Intent.ACTION_BOOT_COMPLETED);
         filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_USER_FOREGROUND);
 
         context.registerReceiver(this, filter);
     }
