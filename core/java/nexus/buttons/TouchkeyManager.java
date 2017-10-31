@@ -18,7 +18,9 @@ package nexus.buttons;
 
 import android.content.Context;
 import android.os.FileUtils;
+import android.os.UserHandle;
 import android.provider.Settings;
+import static android.provider.Settings.System.DEV_FORCE_SHOW_NAVBAR;
 import android.util.Log;
 
 import nexus.hardware.Touchkeys;
@@ -35,8 +37,12 @@ public class TouchkeyManager {
     private static final String TAG = "TouchkeyManager";
 
     public static void apply(final Context context) {
+        boolean touchkeysEnabled = NexusSettings.getBoolForCurrentUser(context, TOUCHKEYS_ENABLED, true);
+
         Log.i(TAG, "apply");
-        Touchkeys.setState(NexusSettings.getBoolForCurrentUser(context, TOUCHKEYS_ENABLED, true));
+        Touchkeys.setState(touchkeysEnabled);
+        Settings.System.putIntForUser(context.getContentResolver(), DEV_FORCE_SHOW_NAVBAR,
+                (!touchkeysEnabled ? 1 : 0), UserHandle.USER_CURRENT);
     }
 
 }
