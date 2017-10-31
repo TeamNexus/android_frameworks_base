@@ -21,7 +21,8 @@ import android.os.UserHandle;
 import android.provider.Settings;
 
 /**
- * The Settings provider contains global system-level device preferences.
+ * Global user-level preferences for NexusOS-abilities
+ * @hide
  */
 public final class NexusSettings {
 
@@ -31,6 +32,12 @@ public final class NexusSettings {
      * @hide
      */
     private static final String NEXUS_SETTINGS_PREFIX = "nexus::";
+
+    /**
+     * Value used to indicates if the default settings have already been applied
+     * @hide
+     */
+    public static final String DEFAULT_SETTINGS_APPLIED = "default_settings_applied";
 
     /**
      * Battery-Percentage at which Ambient Display/Always-On-Display have to be disabled
@@ -101,6 +108,24 @@ public final class NexusSettings {
     }
 
     /**
+     * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
+     * the current user is not 0, returning a default value if no stored value
+     * was found
+     *
+     * @param context the context to use
+     * @param name name of the setting to find
+     * @param def the default value if no setting was found
+     * @return return stored boolean/def is nothing was found
+     */
+    public static final boolean getBoolForUser(Context context, String name, boolean def, int user) {
+        return Settings.Secure.getIntForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                def ? 1 : 0,
+                user) != 0;
+    }
+
+    /**
      * Wrapper for putIntForCurrentUser(). Saves the value with to the passed
      * name for the current user
      *
@@ -114,6 +139,22 @@ public final class NexusSettings {
                 NEXUS_SETTINGS_PREFIX + name,
                 value ? 1 : 0,
                 UserHandle.myUserId());
+    }
+
+    /**
+     * Wrapper for putIntForCurrentUser(). Saves the value with to the passed
+     * name for the current user
+     *
+     * @param context the context to use
+     * @param name name of the setting to update
+     * @param value the new value of the setting
+     */
+    public static final void putBoolForUser(Context context, String name, boolean value, int user) {
+        Settings.Secure.putIntForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                value ? 1 : 0,
+                user);
     }
 
     /**
@@ -135,6 +176,24 @@ public final class NexusSettings {
     }
 
     /**
+     * Wrapper for getIntForUser(). Returns the requested setting for
+     * the current user, returning a default value if no stored value
+     * was found
+     *
+     * @param context the context to use
+     * @param name name of the setting to find
+     * @param def the default value if no setting was found
+     * @return return stored integer/def is nothing was found
+     */
+    public static final int getIntForUser(Context context, String name, int def, int user) {
+        return Settings.Secure.getIntForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                def,
+                user);
+    }
+
+    /**
      * Wrapper for putIntForUser(). Saves the value with to the passed
      * name for the current user
      *
@@ -148,6 +207,22 @@ public final class NexusSettings {
                 NEXUS_SETTINGS_PREFIX + name,
                 value,
                 UserHandle.myUserId());
+    }
+
+    /**
+     * Wrapper for putIntForUser(). Saves the value with to the passed
+     * name for the current user
+     *
+     * @param context the context to use
+     * @param name name of the setting to update
+     * @param value the new value of the setting
+     */
+    public static final void putIntForUser(Context context, String name, int value, int user) {
+        Settings.Secure.putIntForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                value,
+                user);
     }
 
     /**
@@ -167,6 +242,22 @@ public final class NexusSettings {
     }
 
     /**
+     * Wrapper for getStringForUser(). Returns the requested setting for
+     * the current user, returning a default value if no stored value
+     * was found
+     *
+     * @param context the context to use
+     * @param name name of the setting to find
+     * @return return stored string
+     */
+    public static final String getStringForUser(Context context, String name, int user) {
+        return Settings.Secure.getStringForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                user);
+    }
+
+    /**
      * Wrapper for putStringForUser(). Saves the value with to the passed
      * name for the current user
      *
@@ -181,5 +272,35 @@ public final class NexusSettings {
                 value,
                 UserHandle.myUserId());
     }
+
+    /**
+     * Wrapper for putStringForUser(). Saves the value with to the passed
+     * name for the current user
+     *
+     * @param context the context to use
+     * @param name name of the setting to update
+     * @param value the new value of the setting
+     */
+    public static final void putStringForUser(Context context, String name, String value, int user) {
+        Settings.Secure.putStringForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                value,
+                user);
+    }
+
+    /**
+     * @hide
+     */
+	public static final void applyDefaultSettings(Context context) {
+		putIntForCurrentUser(context, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 25);
+		putBoolForCurrentUser(context, FINGERPRINT_UNLOCK_AFTER_REBOOT, false);
+		putIntForCurrentUser(context, KEYGUARD_CLOCK_SHOW_SECONDS, 3);
+		putIntForCurrentUser(context, MDNIE_MODE, 4);
+		putIntForCurrentUser(context, MDNIE_SCENARIO, 0);
+		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_RED, 255);
+		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_GREEN, 255);
+		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_BLUE, 255);
+	}
 	
 }

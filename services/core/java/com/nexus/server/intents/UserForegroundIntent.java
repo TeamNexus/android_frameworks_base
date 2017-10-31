@@ -20,13 +20,19 @@ import android.content.Context;
 import android.content.Intent;
 
 import nexus.display.MdnieManager;
+import nexus.provider.DefaultSettingsApplier;
 
 /**
  * @hide
  */
-public class ScreenOnIntent {
+public class UserForegroundIntent {
 
     public static void onReceive(final Context context, final Intent intent) {
+        int user = intent.getExtras().getInt("android.intent.extra.user_handle");
+        DefaultSettingsApplier.tryApply(context, user);
+
+        // run appliers after the default-applier to make sure default settings
+        // are applied and not just stored
         MdnieManager.apply(context);
     }
 

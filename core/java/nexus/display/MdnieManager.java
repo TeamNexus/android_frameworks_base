@@ -21,6 +21,7 @@ import android.os.FileUtils;
 import android.provider.Settings;
 import android.util.Log;
 
+import nexus.hardware.MdnieDisplay;
 import nexus.provider.NexusSettings;
 import static nexus.provider.NexusSettings.MDNIE_MODE;
 import static nexus.provider.NexusSettings.MDNIE_SCENARIO;
@@ -37,46 +38,28 @@ public class MdnieManager {
 
     private static final String TAG = "MdnieManager";
 
-    private static final String PATH_MDNIE_MODE = "/sys/class/mdnie/mdnie/mode";
-    private static final String PATH_MDNIE_SCENARIO = "/sys/class/mdnie/mdnie/scenario";
-    private static final String PATH_MDNIE_SENSORRGB = "/sys/class/mdnie/mdnie/sensorRGB";
-
-    private final Context mContext;
-
-    public MdnieManager(final Context context) {
-        this.mContext = context;
+    public static void apply(final Context context) {
+        applyMdnieMode(context);
+        applyMdnieScenario(context);
+        applyMdnieSensorRGB(context);
     }
 
-    public void apply() {
-        this.applyMdnieMode();
-        this.applyMdnieScenario();
-        this.applyMdnieSensorRGB();
-    }
-
-    public void applyMdnieMode() {
+    public static void applyMdnieMode(final Context context) {
         Log.i(TAG, "applyMdnieMode");
-        try {
-            FileUtils.stringToFile(PATH_MDNIE_MODE,
-                    String.valueOf(NexusSettings.getIntForCurrentUser(mContext, MDNIE_MODE, 0)));
-        } catch (IOException e) { }
+        MdnieDisplay.setMdnieMode(NexusSettings.getIntForCurrentUser(context, MDNIE_MODE, 0));
     }
 
-    public void applyMdnieScenario() {
+    public static void applyMdnieScenario(final Context context) {
         Log.i(TAG, "applyMdnieScenario");
-        try {
-            FileUtils.stringToFile(PATH_MDNIE_SCENARIO,
-                    String.valueOf(NexusSettings.getIntForCurrentUser(mContext, MDNIE_SCENARIO, 0)));
-        } catch (IOException e) { }
+        MdnieDisplay.setMdnieScenario(NexusSettings.getIntForCurrentUser(context, MDNIE_SCENARIO, 0));
     }
 
-    public void applyMdnieSensorRGB() {
+    public static void applyMdnieSensorRGB(final Context context) {
         Log.i(TAG, "applyMdnieSensorRGB");
-        try {
-            FileUtils.stringToFile(PATH_MDNIE_SENSORRGB,
-                    NexusSettings.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_RED, 255) + " " +
-                    NexusSettings.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_GREEN, 255) + " " +
-                    NexusSettings.getIntForCurrentUser(mContext, MDNIE_COLOR_CORRECTION_BLUE, 255) + "\n");
-        } catch (IOException e) { }
+        MdnieDisplay.setColorCorrection(
+                NexusSettings.getIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_RED, 255),
+                NexusSettings.getIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_GREEN, 255),
+                NexusSettings.getIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_BLUE, 255));
     }
 
 }

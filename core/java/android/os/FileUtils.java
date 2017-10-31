@@ -805,14 +805,16 @@ public class FileUtils {
 
 	public static boolean isAccessible(String path) {
 		File f = new File(path);
-		return f.canRead() && f.canWrite();
+		return f.exists() && f.canRead() && f.canWrite();
 	}
 
 	public static boolean isReadable(String path) {
-		return new File(path).canRead();
+		File f = new File(path);
+		return f.exists() && f.canRead();
 	}
 
 	public static boolean isWriteable(String path) {
-		return new File(path).canWrite();
+		File f = new File(path);
+		return f.exists() && f.canWrite();
 	}
 }

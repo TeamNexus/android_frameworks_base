@@ -24,6 +24,8 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
 
+import nexus.hardware.AmbientDisplay;
+
 public class AmbientDisplayConfiguration {
 
     private final Context mContext;
@@ -95,7 +97,7 @@ public class AmbientDisplayConfiguration {
     }
 
     private boolean ambientDisplayAvailable() {
-        return !TextUtils.isEmpty(ambientDisplayComponent());
+        return !TextUtils.isEmpty(ambientDisplayComponent()) && AmbientDisplay.supportsAmbientDisplay();
     }
 
     private boolean boolSettingDefaultOn(String name, int user) {

@@ -566,6 +566,35 @@ framework_res_R_stamp := \
 	$(call intermediates-dir-for,APPS,framework-res,,COMMON)/src/R.stamp
 LOCAL_ADDITIONAL_DEPENDENCIES := $(framework_res_R_stamp)
 
+#
+# Load hardware-classes (kanged from LineageOS)
+# https://github.com/LineageOS/android_frameworks_opt_hardware/blob/cm-14.1/Android.mk
+#
+ifneq ($(BOARD_NEXUS_HARDWARE_CLASS),)
+    $(foreach bcp, $(BOARD_NEXUS_HARDWARE_CLASS), \
+        $(eval BOARD_SRC_FILES += $(call all-java-files-under, ../../$(bcp))))
+endif
+
+BASE_SRC_FILES += $(call all-java-files-under, nexus/hardware)
+
+reverse = $(if $(wordlist 2,2,$(1)),$(call reverse,$(wordlist 2,$(words $(1)),$(1))) $(firstword $(1)),$(1))
+
+overriden_classes :=
+    $(foreach cf, $(call reverse, $(BOARD_SRC_FILES)), \
+        $(eval overriden_classes += $(cf)))
+
+unique_specific_classes :=
+    $(foreach cf, $(overriden_classes), \
+        $(if $(filter $(notdir $(unique_specific_classes)), $(notdir $(cf))),, \
+            $(eval unique_specific_classes += $(cf))))
+
+default_classes :=
+    $(foreach cf, $(BASE_SRC_FILES), \
+        $(if $(filter $(notdir $(unique_specific_classes)), $(notdir $(cf))),, \
+$(eval default_classes += $(cf))))
+
+LOCAL_SRC_FILES += $(default_classes) $(unique_specific_classes)
+
 LOCAL_NO_STANDARD_LIBRARIES := true
 LOCAL_JAVA_LIBRARIES := core-oj core-libart conscrypt okhttp bouncycastle ext
 

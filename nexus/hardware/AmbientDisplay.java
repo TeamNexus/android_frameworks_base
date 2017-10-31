@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package com.nexus.server.intent;
+package nexus.hardware;
 
-import android.content.Context;
-import android.content.Intent;
-
-import nexus.display.MdnieManager;
+import java.util.HashMap;
 
 /**
  * @hide
  */
-public class ScreenOnIntent {
+public class AmbientDisplay {
 
-    public static void onReceive(final Context context, final Intent intent) {
-        MdnieManager.apply(context);
-    }
+	public static boolean supportsAmbientDisplay() { return false; }
 
 }

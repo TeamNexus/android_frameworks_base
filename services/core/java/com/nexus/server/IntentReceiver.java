@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 
 import com.nexus.server.intent.BootCompletedIntent;
 import com.nexus.server.intent.ScreenOnIntent;
+import com.nexus.server.intent.UserForegroundIntent;
 
 class IntentReceiver extends BroadcastReceiver {
 
@@ -56,6 +57,10 @@ class IntentReceiver extends BroadcastReceiver {
 
             case Intent.ACTION_SCREEN_ON:
                 ScreenOnIntent.onReceive(context, intent);
+                break;
+
+            case Intent.ACTION_USER_FOREGROUND:
+                UserForegroundIntent.onReceive(context, intent);
                 break;
         }
     }

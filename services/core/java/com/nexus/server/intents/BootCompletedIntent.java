@@ -18,8 +18,10 @@ package com.nexus.server.intent;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.UserHandle;
 
 import nexus.display.MdnieManager;
+import nexus.provider.DefaultSettingsApplier;
 
 /**
  * @hide
@@ -27,7 +29,8 @@ import nexus.display.MdnieManager;
 public class BootCompletedIntent {
 
     public static void onReceive(final Context context, final Intent intent) {
-        new MdnieManager(context).apply();
+        DefaultSettingsApplier.tryApply(context, UserHandle.myUserId());
+        MdnieManager.apply(context);
     }
 
 }
