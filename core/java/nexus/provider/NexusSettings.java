@@ -17,6 +17,7 @@
 package nexus.provider;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.UserHandle;
 import android.provider.Settings;
 
@@ -336,5 +337,16 @@ public final class NexusSettings {
                 user);
 		return result != null;
     }
-	
+
+    /**
+     * Wrapper for System.Secure.getUriFor(String). Converts given setting-names
+	 * to NexusSettings-compatible ones
+	 *
+     * @param name to look up in the table
+     * @return the corresponding content URI, or null if not present
+     */
+    public static Uri getUriFor(String name) {
+        return Settings.Secure.getUriFor(NEXUS_SETTINGS_PREFIX + name);
+    }
+
 }
