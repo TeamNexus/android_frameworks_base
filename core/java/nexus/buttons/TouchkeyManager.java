@@ -14,22 +14,29 @@
  * limitations under the License.
  */
 
-package com.nexus.server.intent;
+package nexus.buttons;
 
 import android.content.Context;
-import android.content.Intent;
+import android.os.FileUtils;
+import android.provider.Settings;
+import android.util.Log;
 
-import nexus.buttons.TouchkeyManager;
-import nexus.display.MdnieManager;
+import nexus.hardware.Touchkeys;
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.TOUCHKEYS_ENABLED;
+
+import java.io.IOException;
 
 /**
  * @hide
  */
-public class ScreenOnIntent {
+public class TouchkeyManager {
 
-    public static void onReceive(final Context context, final Intent intent) {
-        MdnieManager.apply(context);
-        TouchkeyManager.apply(context);
+    private static final String TAG = "TouchkeyManager";
+
+    public static void apply(final Context context) {
+        Log.i(TAG, "apply");
+        Touchkeys.setState(NexusSettings.getBoolForCurrentUser(context, TOUCHKEYS_ENABLED, true));
     }
 
 }

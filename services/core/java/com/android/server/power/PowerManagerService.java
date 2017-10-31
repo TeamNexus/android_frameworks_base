@@ -117,6 +117,9 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
 
 import nexus.provider.NexusSettings;
 import static nexus.provider.NexusSettings.CRITICAL_DREAMING_BATTERY_PERCENTAGE;
+import static nexus.provider.NexusSettings.TOUCHKEYS_ENABLED;
+import static nexus.provider.NexusSettings.TOUCHKEYS_BACKLIGHT_DIRECT_ONLY;
+import static nexus.provider.NexusSettings.TOUCHKEYS_BACKLIGHT_TIMEOUT;
 
 /**
  * The power manager service is responsible for coordinating power management
@@ -570,6 +573,9 @@ public final class PowerManagerService extends SystemService
 
     // True if we are currently in VR Mode.
     private boolean mIsVrModeEnabled;
+
+    // True if last interaction was a touchkey-press
+    private boolean mTouchkeyPressed;
 
     /**
      * All times are in milliseconds. These constants are kept synchronized with the system
@@ -1404,12 +1410,13 @@ public final class PowerManagerService extends SystemService
                     return true;
                 }
             } else {
-                if (eventTime > mLastUserActivityTime) {
+                if (eventTime > mLastUserActivityTime) {					
                     mLastUserActivityTime = eventTime;
                     mDirty |= DIRTY_USER_ACTIVITY;
                     if (event == PowerManager.USER_ACTIVITY_EVENT_BUTTON) {
                         mDirty |= DIRTY_QUIESCENT;
                     }
+					mTouchkeyPressed = (event == PowerManager.USER_ACTIVITY_EVENT_BUTTON);
                     return true;
                 }
             }
@@ -1976,11 +1983,17 @@ public final class PowerManagerService extends SystemService
                     nextTimeout = mLastUserActivityTime
                             + screenOffTimeout - screenDimDuration;
                     if (now < nextTimeout) {
-                        if (now > mLastUserActivityTime + BUTTON_ON_DURATION) {
+                        boolean touchkeysEnabled = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_ENABLED, true);
+                        boolean backlightOnPressOnly = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
+                        int backlightTimeout = NexusSettings.getIntForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
+                        if (now > mLastUserActivityTime + backlightTimeout) {
                             mButtonsLight.setBrightness(0);
                         } else {
-                            mButtonsLight.setBrightness(mDisplayPowerRequest.screenBrightness);
-                            nextTimeout = now + BUTTON_ON_DURATION;
+                            if (touchkeysEnabled && ((backlightOnPressOnly && mTouchkeyPressed) || !backlightOnPressOnly))
+                                mButtonsLight.setBrightness(mDisplayPowerRequest.screenBrightness);
+                            else
+                                mButtonsLight.setBrightness(0);
+                            nextTimeout = now + backlightTimeout;
                         }
                         mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;
                     } else {

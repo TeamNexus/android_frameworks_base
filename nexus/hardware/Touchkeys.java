@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package com.nexus.server.intent;
+package nexus.hardware;
 
-import android.content.Context;
-import android.content.Intent;
-
-import nexus.buttons.TouchkeyManager;
-import nexus.display.MdnieManager;
+import java.util.HashMap;
 
 /**
  * @hide
  */
-public class ScreenOnIntent {
+public class Touchkeys {
 
-    public static void onReceive(final Context context, final Intent intent) {
-        MdnieManager.apply(context);
-        TouchkeyManager.apply(context);
-    }
+	public static boolean isSupported() { return false; }
+
+	public static boolean getState() { return false; }
+
+	public static void setState(boolean state) { }
 
 }

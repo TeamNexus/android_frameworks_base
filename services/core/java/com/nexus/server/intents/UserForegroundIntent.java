@@ -19,6 +19,7 @@ package com.nexus.server.intent;
 import android.content.Context;
 import android.content.Intent;
 
+import nexus.buttons.TouchkeyManager;
 import nexus.display.MdnieManager;
 import nexus.provider.DefaultSettingsApplier;
 
@@ -34,6 +35,7 @@ public class UserForegroundIntent {
         // run appliers after the default-applier to make sure default settings
         // are applied and not just stored
         MdnieManager.apply(context);
+        TouchkeyManager.apply(context);
     }
 
 }

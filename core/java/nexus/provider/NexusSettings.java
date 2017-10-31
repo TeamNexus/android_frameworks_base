@@ -90,6 +90,25 @@ public final class NexusSettings {
     public static final String MDNIE_COLOR_CORRECTION_BLUE = "mdnie_color_correction_blue";
 
     /**
+     * Determines the state of touchkeys if available
+     * @hide
+     */
+    public static final String TOUCHKEYS_ENABLED = "touchkeys_enabled";
+
+    /**
+     * Determines if the backlight of the touchkeys should only be lighted if
+	 * the touchkeys are directly pressed
+     * @hide
+     */
+    public static final String TOUCHKEYS_BACKLIGHT_DIRECT_ONLY = "touchkeys_backlight_direct_only";
+
+    /**
+     * Timeout in seconds after which the touchkey-backlight gets disabled (0 also means disabled, thus minimal value is 1)
+     * @hide
+     */
+    public static final String TOUCHKEYS_BACKLIGHT_TIMEOUT = "touchkeys_backlight_timeout";
+
+    /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
      * the current user is not 0, returning a default value if no stored value
      * was found
@@ -301,6 +320,9 @@ public final class NexusSettings {
 		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_RED, 255);
 		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_GREEN, 255);
 		putIntForCurrentUser(context, MDNIE_COLOR_CORRECTION_BLUE, 255);
+		putBoolForCurrentUser(context, TOUCHKEYS_ENABLED, true);
+		putBoolForCurrentUser(context, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
+		putIntForCurrentUser(context, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
 	}
 	
 }
