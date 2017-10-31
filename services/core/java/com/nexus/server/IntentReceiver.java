@@ -44,7 +44,11 @@ class IntentReceiver extends BroadcastReceiver {
         new Thread() {
             @Override
             public void run() {
-                onReceiveAsync(context, intent);
+				try {
+					onReceiveAsync(context, intent);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
             }
         }.start();
     }
