@@ -25,6 +25,8 @@ public class Touchkeys {
 
 	public static boolean isSupported() { return false; }
 
+	public static boolean isBacklightSupported() { return false; }
+
 	public static boolean getState() { return false; }
 
 	public static void setState(boolean state) { }
