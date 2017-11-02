@@ -641,6 +641,51 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    class NexusSettingsObserver extends ContentObserver {
+        NexusSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            // Observe all users' changes
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    CRITICAL_DREAMING_BATTERY_PERCENTAGE), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    TOUCHKEYS_ENABLED), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    TOUCHKEYS_BACKLIGHT_DIRECT_ONLY), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    TOUCHKEYS_BACKLIGHT_TIMEOUT), false, this,
+                    UserHandle.USER_ALL);
+            updateNexusSettingsLocked();
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            updateNexusSettingsLocked();
+        }
+    }
+
+    private NexusSettingsObserver mNexusSettingsObserver;
+    private Object mNexusSettingsLock;
+    private int mCriticalDreamingBatteryPercentage;
+    private boolean mTouchkeysEnabled;
+    private boolean mTouchkeysBacklightDirectOnly;
+    private int mTouchkeysBacklightTimeout;
+
+    private void updateNexusSettingsLocked() {
+        synchronized (mNexusSettingsLock) {
+            mCriticalDreamingBatteryPercentage = NexusSettings.getIntForCurrentUser(mContext, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 5000);
+            mTouchkeysEnabled = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_ENABLED, true);
+            mTouchkeysBacklightDirectOnly = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
+            mTouchkeysBacklightTimeout = NexusSettings.getIntForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
+        }
+    }
+
     final Constants mConstants;
 
     private native void nativeInit();
@@ -771,6 +816,8 @@ public final class PowerManagerService extends SystemService
                     createSuspendBlockerLocked("PowerManagerService.WirelessChargerDetector"),
                     mHandler);
             mSettingsObserver = new SettingsObserver(mHandler);
+            mNexusSettingsObserver = new NexusSettingsObserver(mHandler);
+            mNexusSettingsLock = new Object();
 
             mLightsManager = getLocalService(LightsManager.class);
             mAttentionLight = mLightsManager.getLight(LightsManager.LIGHT_ID_ATTENTION);
@@ -852,6 +899,8 @@ public final class PowerManagerService extends SystemService
                 Slog.e(TAG, "Failed to register VR mode state listener: " + e);
             }
         }
+
+        mNexusSettingsObserver.observe();
 
         // Register for broadcasts from other components of the system.
         IntentFilter filter = new IntentFilter();
@@ -1983,17 +2032,14 @@ public final class PowerManagerService extends SystemService
                     nextTimeout = mLastUserActivityTime
                             + screenOffTimeout - screenDimDuration;
                     if (now < nextTimeout) {
-                        boolean touchkeysEnabled = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_ENABLED, true);
-                        boolean backlightOnPressOnly = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
-                        int backlightTimeout = NexusSettings.getIntForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
-                        if (now > mLastUserActivityTime + backlightTimeout) {
+                        if (now > mLastUserActivityTime + mTouchkeysBacklightTimeout) {
                             mButtonsLight.setBrightness(0);
                         } else {
-                            if (touchkeysEnabled && ((backlightOnPressOnly && mTouchkeyPressed) || !backlightOnPressOnly))
+                            if (mTouchkeysEnabled && ((mTouchkeysBacklightDirectOnly && mTouchkeyPressed) || !mTouchkeysBacklightDirectOnly))
                                 mButtonsLight.setBrightness(mDisplayPowerRequest.screenBrightness);
                             else
                                 mButtonsLight.setBrightness(0);
-                            nextTimeout = now + backlightTimeout;
+                            nextTimeout = now + mTouchkeysBacklightTimeout;
                         }
                         mUserActivitySummary = USER_ACTIVITY_SCREEN_BRIGHT;
                     } else {
