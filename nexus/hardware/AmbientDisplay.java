@@ -25,4 +25,6 @@ public class AmbientDisplay {
 
 	public static boolean supportsAmbientDisplay() { return false; }
 
+	public static boolean supportsAlwaysOnDisplay() { return false; }
+
 }
