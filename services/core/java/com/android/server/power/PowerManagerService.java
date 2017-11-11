@@ -120,6 +120,7 @@ import static nexus.provider.NexusSettings.CRITICAL_DREAMING_BATTERY_PERCENTAGE;
 import static nexus.provider.NexusSettings.TOUCHKEYS_ENABLED;
 import static nexus.provider.NexusSettings.TOUCHKEYS_BACKLIGHT_DIRECT_ONLY;
 import static nexus.provider.NexusSettings.TOUCHKEYS_BACKLIGHT_TIMEOUT;
+import static nexus.provider.NexusSettings.SCREEN_DIM_DURATION;
 
 /**
  * The power manager service is responsible for coordinating power management
@@ -661,6 +662,9 @@ public final class PowerManagerService extends SystemService
             resolver.registerContentObserver(NexusSettings.getUriFor(
                     TOUCHKEYS_BACKLIGHT_TIMEOUT), false, this,
                     UserHandle.USER_ALL);
+            resolver.registerContentObserver(NexusSettings.getUriFor(
+                    SCREEN_DIM_DURATION), false, this,
+                    UserHandle.USER_ALL);
             updateNexusSettingsLocked();
         }
 
@@ -680,9 +684,19 @@ public final class PowerManagerService extends SystemService
     private void updateNexusSettingsLocked() {
         synchronized (mNexusSettingsLock) {
             mCriticalDreamingBatteryPercentage = NexusSettings.getIntForCurrentUser(mContext, CRITICAL_DREAMING_BATTERY_PERCENTAGE, 5000);
+            Slog.i(TAG, "mCriticalDreamingBatteryPercentage=" + mCriticalDreamingBatteryPercentage);
+            
             mTouchkeysEnabled = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_ENABLED, true);
+            Slog.i(TAG, "mTouchkeysEnabled=" + mTouchkeysEnabled);
+            
             mTouchkeysBacklightDirectOnly = NexusSettings.getBoolForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true);
+            Slog.i(TAG, "mTouchkeysBacklightDirectOnly=" + mTouchkeysBacklightDirectOnly);
+            
             mTouchkeysBacklightTimeout = NexusSettings.getIntForCurrentUser(mContext, TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000);
+            Slog.i(TAG, "mTouchkeysBacklightTimeout=" + mTouchkeysBacklightTimeout);
+            
+            mMaximumScreenDimDurationConfig = NexusSettings.getIntForCurrentUser(mContext, SCREEN_DIM_DURATION, 7000);
+            Slog.i(TAG, "mMaximumScreenDimDurationConfig=" + mMaximumScreenDimDurationConfig);
         }
     }
 
@@ -834,6 +848,7 @@ public final class PowerManagerService extends SystemService
             // Go.
             readConfigurationLocked();
             updateSettingsLocked();
+            updateNexusSettingsLocked();
             mDirty |= DIRTY_BATTERY_STATE;
             updatePowerStateLocked();
         }
@@ -2151,8 +2166,7 @@ public final class PowerManagerService extends SystemService
     }
 
     private int getScreenDimDurationLocked(int screenOffTimeout) {
-        return Math.min(mMaximumScreenDimDurationConfig,
-                (int)(screenOffTimeout * mMaximumScreenDimRatioConfig));
+        return mMaximumScreenDimDurationConfig;
     }
 
     /**

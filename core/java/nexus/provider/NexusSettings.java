@@ -104,10 +104,16 @@ public final class NexusSettings {
     public static final String TOUCHKEYS_BACKLIGHT_DIRECT_ONLY = "touchkeys_backlight_direct_only";
 
     /**
-     * Timeout in seconds after which the touchkey-backlight gets disabled (0 also means disabled, thus minimal value is 1)
+     * Timeout in milliseconds after which the touchkey-backlight gets disabled (0 also means disabled, thus minimal value is 1)
      * @hide
      */
     public static final String TOUCHKEYS_BACKLIGHT_TIMEOUT = "touchkeys_backlight_timeout";
+
+    /**
+     * Time in milliseconds in which get screen gets dimmed after time of inactivity
+     * @hide
+     */
+    public static final String SCREEN_DIM_DURATION = "screen_dim_duration";
 
     /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
@@ -239,6 +245,74 @@ public final class NexusSettings {
      */
     public static final void putIntForUser(Context context, String name, int value, int user) {
         Settings.Secure.putIntForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                value,
+                user);
+    }
+
+    /**
+     * Wrapper for getFloatForUser(). Returns the requested setting for
+     * the current user, returning a default value if no stored value
+     * was found
+     *
+     * @param context the context to use
+     * @param name name of the setting to find
+     * @param def the default value if no setting was found
+     * @return return stored integer/def is nothing was found
+     */
+    public static final float getFloatForCurrentUser(Context context, String name, float def) {
+        return Settings.Secure.getFloatForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                def,
+                UserHandle.myUserId());
+    }
+
+    /**
+     * Wrapper for getFloatForUser(). Returns the requested setting for
+     * the current user, returning a default value if no stored value
+     * was found
+     *
+     * @param context the context to use
+     * @param name name of the setting to find
+     * @param def the default value if no setting was found
+     * @return return stored integer/def is nothing was found
+     */
+    public static final float getFloatForUser(Context context, String name, float def, int user) {
+        return Settings.Secure.getFloatForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                def,
+                user);
+    }
+
+    /**
+     * Wrapper for putFloatForUser(). Saves the value with to the passed
+     * name for the current user
+     *
+     * @param context the context to use
+     * @param name name of the setting to update
+     * @param value the new value of the setting
+     */
+    public static final void putFloatForCurrentUser(Context context, String name, float value) {
+        Settings.Secure.putFloatForUser(
+                context.getContentResolver(),
+                NEXUS_SETTINGS_PREFIX + name,
+                value,
+                UserHandle.myUserId());
+    }
+
+    /**
+     * Wrapper for putFloatForUser(). Saves the value with to the passed
+     * name for the current user
+     *
+     * @param context the context to use
+     * @param name name of the setting to update
+     * @param value the new value of the setting
+     */
+    public static final void putFloatForUser(Context context, String name, float value, int user) {
+        Settings.Secure.putFloatForUser(
                 context.getContentResolver(),
                 NEXUS_SETTINGS_PREFIX + name,
                 value,
