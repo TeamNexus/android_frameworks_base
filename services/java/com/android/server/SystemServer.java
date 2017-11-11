@@ -259,7 +259,7 @@ public final class SystemServer {
             try {
                 SystemProperties.set("service.adb.tcp.port", Integer.toString(adbPort));
             } catch (RuntimeException ex) {
-                Log.i(TAG, "Failed to update ADB-port (" + ex.getMessage() + ")");
+                Slog.i(TAG, "Failed to update ADB-port (" + ex.getMessage() + ")");
                 ex.printStackTrace();
             }
         }
@@ -1555,8 +1555,10 @@ public final class SystemServer {
 
         // Before things start rolling, be sure we have decided whether
         // we are in safe mode.
-        final boolean safeMode = wm.detectSafeMode();
-        if (safeMode) {
+        final boolean devSafeMode = (Integer.parseInt(SystemProperties.get("sys.safemode", "0")) != 0);
+        final boolean devSafeModeInvisible = (Integer.parseInt(SystemProperties.get("sys.safemode.invisible", "0")) != 0);
+        final boolean safeMode = wm.detectSafeMode() || (devSafeMode && !devSafeModeInvisible);
+        if (safeMode || (devSafeMode && devSafeModeInvisible)) {
             traceBeginAndSlog("EnterSafeModeAndDisableJitCompilation");
             mActivityManagerService.enterSafeMode();
             // Disable the JIT for the system_server process
