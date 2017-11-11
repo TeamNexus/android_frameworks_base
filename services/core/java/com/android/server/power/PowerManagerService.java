@@ -3896,6 +3896,7 @@ public final class PowerManagerService extends SystemService
         public void onReceive(Context context, Intent intent) {
             synchronized (mLock) {
                 handleSettingsChangedLocked();
+                updateNexusSettingsLocked();
             }
         }
     }
