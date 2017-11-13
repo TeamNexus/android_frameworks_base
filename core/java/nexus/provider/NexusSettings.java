@@ -122,6 +122,12 @@ public final class NexusSettings {
     public static final String SCRAMBLE_PIN_LAYOUT = "lockscreen_scramble_pin_layout";
 
     /**
+     * Quick-unlock as soon as the correct PIN was entered
+     * @hide
+     */
+    public static final String QUICK_PIN_UNLOCK = "quick_pin_unlock";
+
+    /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
      * the current user is not 0, returning a default value if no stored value
      * was found
