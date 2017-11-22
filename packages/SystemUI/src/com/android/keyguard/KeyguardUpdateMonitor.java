@@ -779,11 +779,17 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
 
         @Override
         public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
+            if (helpString == null)
+                helpString = "Unknown help string";
+
             handleFingerprintHelp(helpMsgId, helpString.toString());
         }
 
         @Override
         public void onAuthenticationError(int errMsgId, CharSequence errString) {
+            if (errString == null)
+                errString = "Unknown error string";
+
             handleFingerprintError(errMsgId, errString.toString());
         }
 
