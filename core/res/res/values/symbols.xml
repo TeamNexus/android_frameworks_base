@@ -2606,6 +2606,7 @@
   <java-symbol type="string" name="status_bar_alarm_clock" />
   <java-symbol type="string" name="status_bar_secure" />
   <java-symbol type="string" name="status_bar_clock" />
+  <java-symbol type="string" name="status_bar_su" />
 
   <!-- Locale picker -->
   <java-symbol type="id" name="locale_search_menu" />
