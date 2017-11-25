@@ -35,12 +35,6 @@ public final class NexusSettings {
     public static final String NEXUS_SETTINGS_PREFIX = "nexus::";
 
     /**
-     * Value used to indicates if the default settings have already been applied
-     * @hide
-     */
-    public static final String DEFAULT_SETTINGS_APPLIED = "default_settings_applied";
-
-    /**
      * Battery-Percentage at which Ambient Display/Always-On-Display have to be disabled
      * The value is any between between 0 and 100
      * @hide
