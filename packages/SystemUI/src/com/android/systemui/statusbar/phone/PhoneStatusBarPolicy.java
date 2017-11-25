@@ -82,6 +82,8 @@ import com.android.systemui.statusbar.policy.LocationController.LocationChangeCa
 import com.android.systemui.statusbar.policy.NextAlarmController;
 import com.android.systemui.statusbar.policy.RotationLockController;
 import com.android.systemui.statusbar.policy.RotationLockController.RotationLockControllerCallback;
+import com.android.systemui.statusbar.policy.SuController;
+import com.android.systemui.statusbar.policy.SuControllerImpl;
 import com.android.systemui.statusbar.policy.UserInfoController;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.util.NotificationChannels;
@@ -114,6 +116,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
     private final String mSlotHeadset;
     private final String mSlotDataSaver;
     private final String mSlotLocation;
+    private final String mSlotSu;
 
     private final Context mContext;
     private final Handler mHandler = new Handler();
@@ -132,6 +135,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
     private final LocationController mLocationController;
     private final ArraySet<Pair<String, Integer>> mCurrentNotifs = new ArraySet<>();
     private final UiOffloadThread mUiOffloadThread = Dependency.get(UiOffloadThread.class);
+    private final SuController mSuController;
 
     // Assume it's all good unless we hear otherwise.  We don't always seem
     // to get broadcasts that it *is* there.
@@ -148,7 +152,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
 
     private BluetoothController mBluetooth;
 
-    public PhoneStatusBarPolicy(Context context, StatusBarIconController iconController) {
+    public PhoneStatusBarPolicy(Context context, StatusBarIconController iconController, SuControllerImpl suController) {
         mContext = context;
         mIconController = iconController;
         mCast = Dependency.get(CastController.class);
@@ -164,6 +168,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mProvisionedController = Dependency.get(DeviceProvisionedController.class);
         mKeyguardMonitor = Dependency.get(KeyguardMonitor.class);
         mLocationController = Dependency.get(LocationController.class);
+        mSuController = suController;
 
         mSlotCast = context.getString(com.android.internal.R.string.status_bar_cast);
         mSlotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot);
@@ -178,6 +183,7 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mSlotHeadset = context.getString(com.android.internal.R.string.status_bar_headset);
         mSlotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver);
         mSlotLocation = context.getString(com.android.internal.R.string.status_bar_location);
+        mSlotSu = context.getString(com.android.internal.R.string.status_bar_su);
 
         // listen for broadcasts
         IntentFilter filter = new IntentFilter();
@@ -241,6 +247,11 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
         mIconController.setIcon(mSlotDataSaver, R.drawable.stat_sys_data_saver,
                 context.getString(R.string.accessibility_data_saver_on));
         mIconController.setIconVisibility(mSlotDataSaver, false);
+
+        // su
+        mIconController.setIcon(mSlotSu, R.drawable.stat_sys_su, null);
+        mIconController.setIconVisibility(mSlotSu, false);
+        mSuController.addCallback(mSuCallback);
 
         mRotationLockController.addCallback(this);
         mBluetooth.addCallback(this);
@@ -820,4 +831,15 @@ public class PhoneStatusBarPolicy implements Callback, Callbacks,
             mIconController.setIconVisibility(mSlotCast, false);
         }
     };
+
+    private final SuController.Callback mSuCallback = new SuController.Callback() {
+        @Override
+        public void onSuSessionsChanged() {
+            updateSu();
+        }
+    };
+
+    private void updateSu() {
+        mIconController.setIconVisibility(mSlotSu, mSuController.hasActiveSessions());
+    }
 }
