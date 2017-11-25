@@ -724,9 +724,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     int mInitialMetaState;
     boolean mForceShowSystemBars;
 
-    boolean mDevForceNavbar = false;
-    private DevForceNavbarObserver mDevForceNavbarObserver;
-
     // support for activating the lock screen while the screen is on
     boolean mAllowLockscreenWhenOn;
     int mLockScreenTimeout;
@@ -999,24 +996,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         @Override public void onChange(boolean selfChange) {
             updateSettings();
             updateRotation(false);
-        }
-    }
-
-    class DevForceNavbarObserver extends ContentObserver {
-        DevForceNavbarObserver(Handler handler) {
-            super(handler);
-        }
-
-        void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.DEV_FORCE_SHOW_NAVBAR), false, this);
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            mDevForceNavbar = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) == 1;
         }
     }
 
@@ -1929,8 +1908,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } catch (RemoteException ex) { }
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
-        mDevForceNavbarObserver = new DevForceNavbarObserver(mHandler);
-        mDevForceNavbarObserver.observe();
         mShortcutManager = new ShortcutManager(context);
         mUiMode = context.getResources().getInteger(
                 com.android.internal.R.integer.config_defaultUiModeType);
@@ -2373,8 +2350,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             boolean devForceNavbar = Settings.System.getIntForUser(resolver,
                     Settings.System.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) == 1;
-            if (devForceNavbar != mDevForceNavbar) {
-                mDevForceNavbar = devForceNavbar;
+            if (mHasNavigationBar != devForceNavbar) {
+                mHasNavigationBar = devForceNavbar;
             }
 
             // Configure rotation lock.
@@ -8208,11 +8185,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // overridden by qemu.hw.mainkeys in the emulator.
     @Override
     public boolean hasNavigationBar() {
-        return mHasNavigationBar || mDevForceNavbar;
-    }
-
-    public boolean needsNavigationBar() {
-        return hasNavigationBar();
+        return mHasNavigationBar;
     }
 
     @Override
