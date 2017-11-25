@@ -40,6 +40,9 @@ public final class DefaultSettingsApplier {
         putDefaultBoolForUser(context, NexusSettings.TOUCHKEYS_ENABLED, true, user);
         putDefaultBoolForUser(context, NexusSettings.TOUCHKEYS_BACKLIGHT_DIRECT_ONLY, true, user);
         putDefaultIntForUser(context, NexusSettings.TOUCHKEYS_BACKLIGHT_TIMEOUT, 5000, user);
+        putDefaultIntForUser(context, NexusSettings.SCREEN_DIM_DURATION, 7000, user);
+        putDefaultBoolForUser(context, NexusSettings.SCRAMBLE_PIN_LAYOUT, false, user);
+        putDefaultBoolForUser(context, NexusSettings.QUICK_PIN_UNLOCK, false, user);
     }
 
     private static final void putDefaultBoolForUser(final Context context, String name, boolean value, final int user) {
