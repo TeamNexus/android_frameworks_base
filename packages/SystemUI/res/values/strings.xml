@@ -2031,4 +2031,7 @@
         been identified for them as running). [CHAR LIMIT=NONE] -->
     <string name="running_foreground_services_msg">Tap for details on battery and data usage</string>
 
+	<!-- Tile to toggle global state of superuser-daemon -->
+    <string name="quick_settings_superuser_title">Superuser</string>
+
 </resources>
