@@ -544,6 +544,9 @@
     <!-- GZOSP additions start -->
     <protected-broadcast android:name="android.settings.SHOW_INPUT_METHOD_PICKER" />
 
+    <!-- NexusOS additions start -->
+    <protected-broadcast android:name="android.intent.action.SU_SESSION_CHANGED" />
+
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
     <!-- ====================================================================== -->
