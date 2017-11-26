@@ -2060,4 +2060,7 @@
     <string name="touch_filtered_warning">Because an app is obscuring a permission request, Settings
         can’t verify your response.</string>
 
+	<!-- Tile to toggle global state of superuser-daemon -->
+    <string name="quick_settings_superuser_title">Superuser</string>
+
 </resources>
