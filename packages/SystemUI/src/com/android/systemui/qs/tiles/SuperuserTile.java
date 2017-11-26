@@ -72,6 +72,7 @@ public class SuperuserTile extends QSTileImpl<BooleanState> {
         } else {
             SuManager.setRootEnabled(true);
         }
+        refreshState();
     }
 
     @Override
