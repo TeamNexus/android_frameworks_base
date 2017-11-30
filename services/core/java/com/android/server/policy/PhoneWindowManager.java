@@ -2262,7 +2262,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHasNavigationBar = res.getBoolean(com.android.internal.R.bool.config_showNavigationBar);
         
         // override overlay-options, but still prefer possible build.prop-values
-        mHasNavigationBar = Settings.System.getIntForUser(resolver,
+        mHasNavigationBar = Settings.System.getIntForUser(mContext.getContentResolver(),
                      Settings.System.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) == 1;
 
         // Allow a system property to override this. Used by the emulator.
