@@ -2257,8 +2257,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // Allow the navigation bar to move on non-square small devices (phones).
         mNavigationBarCanMove = width != height && shortSizeDp < 600;
-
+        
+        // use this value as default value, allow user to override it
         mHasNavigationBar = res.getBoolean(com.android.internal.R.bool.config_showNavigationBar);
+        
+        // override overlay-options, but still prefer possible build.prop-values
+        mHasNavigationBar = Settings.System.getIntForUser(resolver,
+                     Settings.System.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) == 1;
 
         // Allow a system property to override this. Used by the emulator.
         // See also hasNavigationBar().
