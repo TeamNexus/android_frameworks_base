@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import com.nexus.server.intent.BootCompletedIntent;
+import com.nexus.server.intent.ScreenOffIntent;
 import com.nexus.server.intent.ScreenOnIntent;
 import com.nexus.server.intent.UserForegroundIntent;
 
@@ -34,6 +35,7 @@ class IntentReceiver extends BroadcastReceiver {
         filter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
 
         filter.addAction(Intent.ACTION_BOOT_COMPLETED);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_USER_FOREGROUND);
 
@@ -58,6 +60,10 @@ class IntentReceiver extends BroadcastReceiver {
         switch (intent.getAction()) {
             case Intent.ACTION_BOOT_COMPLETED:
                 BootCompletedIntent.onReceive(context, intent);
+                break;
+
+            case Intent.ACTION_SCREEN_OFF:
+                ScreenOffIntent.onReceive(context, intent);
                 break;
 
             case Intent.ACTION_SCREEN_ON:
