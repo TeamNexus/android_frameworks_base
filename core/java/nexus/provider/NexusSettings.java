@@ -33,6 +33,12 @@ public final class NexusSettings {
      * @hide
      */
     public static final String NEXUS_SETTINGS_PREFIX = "nexus::";
+	
+    /**
+     * Whether user can unlock the device with the fingerprint
+     * @hide
+     */
+    public static final String FINGERPRINT_UNLOCK_AFTER_REBOOT = "fingerprint_unlock_after_reboot";
 
     /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
