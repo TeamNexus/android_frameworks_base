@@ -114,6 +114,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import vendor.nexus.power.V1_0.NexusPowerHint;
+
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
@@ -1136,6 +1138,9 @@ public final class PowerManagerService extends SystemService
 
     private void acquireWakeLockInternal(IBinder lock, int flags, String tag, String packageName,
             WorkSource ws, String historyTag, int uid, int pid) {
+        // @ WAKEBLOCK
+        com.giovannibozzano.wakeblock.WakeBlockService.getInstance().bindService(mContext);
+        // # WAKEBLOCK
         synchronized (mLock) {
             if (DEBUG_SPEW) {
                 Slog.d(TAG, "acquireWakeLockInternal: lock=" + Objects.hashCode(lock)
@@ -1153,9 +1158,17 @@ public final class PowerManagerService extends SystemService
                     notifyWakeLockChangingLocked(wakeLock, flags, tag, packageName,
                             uid, pid, ws, historyTag);
                     wakeLock.updateProperties(flags, tag, packageName, ws, historyTag, uid, pid);
+                    // @ WAKEBLOCK
+                    com.giovannibozzano.wakeblock.WakeBlockService.getInstance().wakeLockUpdateProperties(lock, wakeLock.mTag, tag);
+                    // # WAKEBLOCK
                 }
                 notifyAcquire = false;
             } else {
+                // @ WAKEBLOCK
+                if (!com.giovannibozzano.wakeblock.WakeBlockService.getInstance().wakeLockAcquireNew(lock, tag, packageName)) {
+                    return;
+                }
+                // # WAKEBLOCK
                 UidState state = mUidState.get(uid);
                 if (state == null) {
                     state = new UidState(uid);
@@ -1231,6 +1244,9 @@ public final class PowerManagerService extends SystemService
             }
 
             WakeLock wakeLock = mWakeLocks.get(index);
+            // @ WAKEBLOCK
+            com.giovannibozzano.wakeblock.WakeBlockService.getInstance().wakeLockRelease(lock, wakeLock.mTag);
+            // # WAKEBLOCK
             if (DEBUG_SPEW) {
                 Slog.d(TAG, "releaseWakeLockInternal: lock=" + Objects.hashCode(lock)
                         + " [" + wakeLock.mTag + "], flags=0x" + Integer.toHexString(flags));
@@ -1257,6 +1273,9 @@ public final class PowerManagerService extends SystemService
                 return;
             }
 
+            // @ WAKEBLOCK
+            com.giovannibozzano.wakeblock.WakeBlockService.getInstance().wakeLockHandleDeath(wakeLock.mLock, wakeLock.mTag);
+            // # WAKEBLOCK
             removeWakeLockLocked(wakeLock, index);
         }
     }
@@ -2350,6 +2369,9 @@ public final class PowerManagerService extends SystemService
                 } else {
                     Slog.i(TAG, "Dreaming...");
                 }
+
+                // notify power-HAL we transition into dozing/dreaming
+                powerHintInternal(NexusPowerHint.DOZING, 1);
             }
 
             // If preconditions changed, wait for the next iteration to determine
@@ -2357,6 +2379,12 @@ public final class PowerManagerService extends SystemService
             if (mSandmanSummoned || mWakefulness != wakefulness) {
                 return; // wait for next cycle
             }
+
+            // keep keyboard/buttons dark if we are dreaming
+            if (wakefulness == WAKEFULNESS_DREAMING ||
+				wakefulness == WAKEFULNESS_DOZING) {
+				mButtonsLight.setBrightness(0);
+			}
 
             // Determine whether the dream should continue.
             if (wakefulness == WAKEFULNESS_DREAMING) {
@@ -2402,6 +2430,9 @@ public final class PowerManagerService extends SystemService
         // Stop dream.
         if (isDreaming) {
             mDreamManager.stopDream(false /*immediate*/);
+
+            // notify power-HAL we transition away from dozing/dreaming
+            powerHintInternal(NexusPowerHint.DOZING, 0);
         }
     }
 
@@ -4428,7 +4459,7 @@ public final class PowerManagerService extends SystemService
 
         @Override // Binder call
         public void wakeUp(long eventTime, String reason, String opPackageName) {
-            wakeUp(eventTime, reason, opPackageName, false);
+            wakeUp(eventTime, reason, opPackageName, mProximityWakeEnabled);
         }
 
         @Override // Binder call

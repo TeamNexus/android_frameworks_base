@@ -37,6 +37,8 @@ import com.android.keyguard.KeyguardSecurityModel.SecurityMode;
 
 import java.io.File;
 
+import nexus.provider.NexusSettings;
+
 /**
  * Base class for keyguard view.  {@link #reset} is where you should
  * reset the state of your view.  Use the {@link KeyguardViewCallback} via
@@ -61,6 +63,7 @@ public class KeyguardHostView extends FrameLayout implements SecurityCallback {
     protected LockPatternUtils mLockPatternUtils;
     private OnDismissAction mDismissAction;
     private Runnable mCancelAction;
+    private KeyguardUpdateMonitor mKeyguardUpdateMonitor;
 
     private final KeyguardUpdateMonitorCallback mUpdateCallback =
             new KeyguardUpdateMonitorCallback() {
@@ -94,6 +97,27 @@ public class KeyguardHostView extends FrameLayout implements SecurityCallback {
                 }
             }
         }
+
+        /*
+         * Kanged from ResurrectionRemix.
+         */
+        @Override
+        public void onTrustChanged(int userId) {
+            if (userId != KeyguardUpdateMonitor.getCurrentUser()) {
+                return;
+            }
+
+            boolean mFaceAuto = NexusSettings.getBoolForCurrentUser(getContext(),
+                    NexusSettings.FACE_AUTO_UNLOCK,
+                    false);
+
+            if (mKeyguardUpdateMonitor.getUserCanSkipBouncer(userId)
+                && mKeyguardUpdateMonitor.getUserHasTrust(userId)
+                && mFaceAuto)
+            {
+                dismiss(false, userId);
+            }
+        }
     };
 
     // Whether the volume keys should be handled by keyguard. If true, then
@@ -111,6 +135,7 @@ public class KeyguardHostView extends FrameLayout implements SecurityCallback {
 
     public KeyguardHostView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mKeyguardUpdateMonitor = KeyguardUpdateMonitor.getInstance(context);
         KeyguardUpdateMonitor.getInstance(context).registerCallback(mUpdateCallback);
     }
 

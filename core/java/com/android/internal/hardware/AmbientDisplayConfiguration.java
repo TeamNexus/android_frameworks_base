@@ -21,6 +21,7 @@ import com.android.internal.R;
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemProperties;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
 
@@ -30,6 +31,10 @@ public class AmbientDisplayConfiguration {
 
     public AmbientDisplayConfiguration(Context context) {
         mContext = context;
+    }
+
+    public boolean enabledForCurrentUser() {
+        return enabled(UserHandle.USER_CURRENT);
     }
 
     public boolean enabled(int user) {
@@ -94,7 +99,7 @@ public class AmbientDisplayConfiguration {
     }
 
     public boolean alwaysOnEnabled(int user) {
-        return boolSettingDefaultOn(Settings.Secure.DOZE_ALWAYS_ON, user) && alwaysOnAvailable()
+        return boolSettingDefaultOff(Settings.Secure.DOZE_ALWAYS_ON, user) && alwaysOnAvailable()
                 && !accessibilityInversionEnabled(user);
     }
 

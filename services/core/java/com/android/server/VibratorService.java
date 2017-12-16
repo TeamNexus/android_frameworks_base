@@ -63,6 +63,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import nexus.provider.NexusSettings;
+import static nexus.provider.NexusSettings.VIBRATOR_INTENSITY;
+
 public class VibratorService extends IVibratorService.Stub
         implements InputManager.InputDeviceListener {
     private static final String TAG = "VibratorService";
@@ -98,6 +101,7 @@ public class VibratorService extends IVibratorService.Stub
     private int mCurVibUid = -1;
     private boolean mLowPowerMode;
     private SettingsObserver mSettingObserver;
+    private int mCurrentVibratorIntensity = 100;
 
     native static boolean vibratorExists();
     native static void vibratorInit();
@@ -264,6 +268,9 @@ public class VibratorService extends IVibratorService.Stub
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.VIBRATE_INPUT_DEVICES),
                 true, mSettingObserver, UserHandle.USER_ALL);
+        mContext.getContentResolver().registerContentObserver(
+                NexusSettings.getUriFor(VIBRATOR_INTENSITY), true, mSettingObserver,
+                UserHandle.USER_ALL);
 
         mContext.registerReceiver(new BroadcastReceiver() {
             @Override
@@ -649,6 +656,14 @@ public class VibratorService extends IVibratorService.Stub
             }
             return true;
         }
+
+        int newVibratorIntensity = NexusSettings.getIntForCurrentUser(mContext,
+                VIBRATOR_INTENSITY, 100);
+        if (newVibratorIntensity != mCurrentVibratorIntensity) {
+            mCurrentVibratorIntensity = newVibratorIntensity;
+            changed = true;
+        }
+
         return changed;
     }
 
@@ -707,10 +722,19 @@ public class VibratorService extends IVibratorService.Stub
                     mInputDeviceVibrators.get(i).vibrate(millis, attributes);
                 }
             } else {
+                int usedAmplitude = 0;
+
+                // scale the amplitude with the requested intensity. Make sure to
+                // skip the adjusting if the scale is set to 0. Also validate that
+				// the intensity does not exceed the value of 100.
+                if (mCurrentVibratorIntensity > 0) {
+                    usedAmplitude = (int)((double)amplitude / (100.0 / Math.min(mCurrentVibratorIntensity, 100)));
+                }
+
                 // Note: ordering is important here! Many haptic drivers will reset their amplitude
                 // when enabled, so we always have to enable frst, then set the amplitude.
                 vibratorOn(millis);
-                doVibratorSetAmplitude(amplitude);
+                doVibratorSetAmplitude(usedAmplitude);
             }
         }
     }
@@ -863,7 +887,16 @@ public class VibratorService extends IVibratorService.Stub
                                         getTotalOnDuration(timings, amplitudes, index - 1, repeat);
                                 doVibratorOn(onDuration, amplitude, mUid, mUsageHint);
                             } else {
-                                doVibratorSetAmplitude(amplitude);
+                                int usedAmplitude = 0;
+
+                                // scale the amplitude with the requested intensity. Make sure to
+                                // skip the adjusting if the scale is set to 0. Also validate that
+				                // the intensity does not exceed the value of 100.
+                                if (mCurrentVibratorIntensity > 0) {
+                                    usedAmplitude = (int)((double)amplitude / (100.0 / Math.min(mCurrentVibratorIntensity, 100)));
+								}
+
+                                doVibratorSetAmplitude(usedAmplitude);
                             }
                         }
 
