@@ -152,6 +152,7 @@ public class KeyguardStatusView extends GridLayout {
         mAlarmStatusView = findViewById(R.id.alarm_status);
         mDateView = findViewById(R.id.date_view);
         mClockView = findViewById(R.id.clock_view);
+        mClockView.setIsKeyguardClockView(true);
         mClockView.setShowCurrentUserTime(true);
         if (KeyguardClockAccessibilityDelegate.isNeeded(mContext)) {
             mClockView.setAccessibilityDelegate(new KeyguardClockAccessibilityDelegate(mContext));
@@ -342,6 +343,7 @@ public class KeyguardStatusView extends GridLayout {
         updateDozeVisibleViews();
         mBatteryDoze.setDark(dark);
         mClockView.setTextColor(ColorUtils.blendARGB(mTextColor, Color.WHITE, darkAmount));
+        mClockView.refresh();
         mDateView.setTextColor(ColorUtils.blendARGB(mDateTextColor, Color.WHITE, darkAmount));
         int blendedAlarmColor = ColorUtils.blendARGB(mAlarmTextColor, Color.WHITE, darkAmount);
         mAlarmStatusView.setTextColor(blendedAlarmColor);
