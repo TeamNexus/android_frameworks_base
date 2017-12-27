@@ -290,7 +290,12 @@ public final class SystemServer {
             int adbPort = LineageSettings.Secure.getInt(mContentResolver,
                 LineageSettings.Secure.ADB_PORT, 0);
             // setting this will control whether ADB runs on TCP/IP or USB
-            SystemProperties.set("adb.network.port", Integer.toString(adbPort));
+            try {
+                SystemProperties.set("adb.network.port", Integer.toString(adbPort));
+            } catch (RuntimeException ex) {
+                Slog.i(TAG, "Failed to set ADB-port");
+                ex.printStackTrace();
+            }
         }
     }
 
