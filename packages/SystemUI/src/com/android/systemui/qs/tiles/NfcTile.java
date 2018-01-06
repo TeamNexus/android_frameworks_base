@@ -82,7 +82,6 @@ public class NfcTile extends QSTileImpl<BooleanState> {
         } else {
             getAdapter().disable();
         }
-        refreshState();
     }
 
     @Override
