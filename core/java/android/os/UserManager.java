@@ -751,11 +751,6 @@ public class UserManager {
     public static final String DISALLOW_AUTOFILL = "no_autofill";
 
     /**
-     * @hide
-     */
-    public static final String DISALLOW_SU = "no_su";
-
-    /**
      * Application restriction key that is used to indicate the pending arrival
      * of real restrictions for the app.
      *
