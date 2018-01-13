@@ -36,11 +36,6 @@ public class ApplicationSettings {
 	 */
 	public static final String PREF_DPI = "dpi";
 
-	/**
-	 * @hide
-	 */
-	public static final String PREF_SKIP_SU_REQUEST = "skip_su_request";
-
 	private static final String SHARED_PREF_FILE = "app_settings";
 	private static final HashSet<String> ALLOWED_PREFS;
 	static {
