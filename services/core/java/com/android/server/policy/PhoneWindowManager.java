@@ -3939,6 +3939,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     performKeyAction(mMenuPressAction, event);
                 }
             }
+            return -1;
         } else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
             if (down) {
                 if (repeatCount == 0) {
