@@ -30,11 +30,22 @@ import com.android.systemui.statusbar.policy.DarkIconDispatcher.DarkReceiver;
 
 import org.lineageos.internal.statusbar.LineageStatusBarItem;
 
-public class LineageStatusBarItemHolder extends RelativeLayout {
+import java.util.ArrayList;
+
+public class LineageStatusBarItemHolder extends RelativeLayout
+        implements LineageStatusBarItem.Manager {
     private static final String TAG = "LineageStatusBarItemHolder";
 
-    private boolean mStatusBarIsVisible;
-    private LineageStatusBarItem mLineageStatusBarItem;
+    private ArrayList<LineageStatusBarItem.DarkReceiver> mDarkReceivers =
+            new ArrayList<LineageStatusBarItem.DarkReceiver>();
+    private ArrayList<LineageStatusBarItem.VisibilityReceiver> mVisibilityReceivers =
+            new ArrayList<LineageStatusBarItem.VisibilityReceiver>();
+
+    private Rect mLastArea;
+    private float mLastDarkIntensity;
+    private int mLastTint;
+
+    private boolean mItemHolderIsVisible;
 
     private Context mContext;
 
@@ -49,28 +60,15 @@ public class LineageStatusBarItemHolder extends RelativeLayout {
     public LineageStatusBarItemHolder(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mContext = context;
-        mStatusBarIsVisible = false;
+        mItemHolderIsVisible = false;
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        // Locate child statusbar item
-        for (int i = 0; i < getChildCount(); i++) {
-            View v = getChildAt(i);
-            if (v instanceof LineageStatusBarItem) {
-                mLineageStatusBarItem = (LineageStatusBarItem) v;
-                break;
-             }
-        }
-
         setOnSystemUiVisibilityChangeListener(mSystemUiVisibilityChangeListener);
-        setStatusBarVisibility(getSystemUiVisibility());
-
-        mLineageStatusBarItem.setFillColors(
-                mContext.getColor(R.color.dark_mode_icon_color_dual_tone_fill),
-                mContext.getColor(R.color.light_mode_icon_color_dual_tone_fill));
+        updateStatusBarVisibility(getSystemUiVisibility());
 
         Dependency.get(DarkIconDispatcher.class).addDarkReceiver(mDarkReceiver);
     }
@@ -82,44 +80,70 @@ public class LineageStatusBarItemHolder extends RelativeLayout {
         Dependency.get(DarkIconDispatcher.class).removeDarkReceiver(mDarkReceiver);
     }
 
+    // Propagate systemui tint updates to registered receivers.
+
     private DarkReceiver mDarkReceiver = new DarkReceiver() {
         @Override
         public void onDarkChanged(Rect area, float darkIntensity, int tint) {
-            mLineageStatusBarItem.onDarkChanged(area, darkIntensity, tint);
+            mLastArea = area;
+            mLastDarkIntensity = darkIntensity;
+            mLastTint = tint;
+            for (LineageStatusBarItem.DarkReceiver r : mDarkReceivers) {
+                r.onDarkChanged(area, darkIntensity, tint);
+            }
         }
     };
 
-    // Collect and propagate the latest visibility or systemui visibility
-    // state to the LineageStatusBarItem child.
+    // Collect and propagate item holder visibility to
+    // registered receivers.
+    //
+    // We watch both our own view visibility and systemui visibility.
+    // Latest change in either direction wins (and has been observed
+    // thus far to always be correct).
 
     @Override
     public void onVisibilityAggregated(boolean isVisible) {
         super.onVisibilityAggregated(isVisible);
-        if (mStatusBarIsVisible != isVisible) {
-            mStatusBarIsVisible = isVisible;
-            updateVisibility();
-        }
+        updateVisibilityReceivers(isVisible);
     }
 
     private View.OnSystemUiVisibilityChangeListener mSystemUiVisibilityChangeListener =
             new View.OnSystemUiVisibilityChangeListener() {
         @Override
         public void onSystemUiVisibilityChange(int visibility) {
-            setStatusBarVisibility(visibility);
+            updateStatusBarVisibility(visibility);
         }
     };
 
-    private void setStatusBarVisibility(int visibility) {
+    private void updateStatusBarVisibility(int visibility) {
         final boolean isVisible =
                 (visibility & SYSTEM_UI_FLAG_FULLSCREEN) == 0
                 || (visibility & SYSTEM_UI_FLAG_LOW_PROFILE) != 0;
-        if (mStatusBarIsVisible != isVisible) {
-            mStatusBarIsVisible = isVisible;
-            updateVisibility();
+        updateVisibilityReceivers(isVisible);
+    }
+
+    private void updateVisibilityReceivers(boolean isVisible) {
+        if (isVisible == mItemHolderIsVisible) {
+            return;
+        }
+        mItemHolderIsVisible = isVisible;
+        for (LineageStatusBarItem.VisibilityReceiver r : mVisibilityReceivers) {
+            r.onVisibilityChanged(mItemHolderIsVisible);
         }
     }
 
-    private void updateVisibility() {
-        mLineageStatusBarItem.setStatusBarVisibility(mStatusBarIsVisible);
+    // LineageStatusBarItem.Manager methods
+
+    public void addDarkReceiver(LineageStatusBarItem.DarkReceiver darkReceiver) {
+        darkReceiver.setFillColors(
+                mContext.getColor(R.color.dark_mode_icon_color_dual_tone_fill),
+                mContext.getColor(R.color.light_mode_icon_color_dual_tone_fill));
+        mDarkReceivers.add(darkReceiver);
+        darkReceiver.onDarkChanged(mLastArea, mLastDarkIntensity, mLastTint);
+    }
+
+    public void addVisibilityReceiver(LineageStatusBarItem.VisibilityReceiver visibilityReceiver) {
+        mVisibilityReceivers.add(visibilityReceiver);
+        visibilityReceiver.onVisibilityChanged(mItemHolderIsVisible);
     }
 }
