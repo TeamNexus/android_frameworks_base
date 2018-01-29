@@ -236,8 +236,6 @@ public final class PowerManagerService extends SystemService
 
     private static final float PROXIMITY_NEAR_THRESHOLD = 5.0f;
 
-    private static final float PROXIMITY_NEAR_THRESHOLD = 5.0f;
-
     // File location for last reboot reason
     private static final String LAST_REBOOT_LOCATION = "/data/misc/reboot/last_reboot_reason";
 
@@ -668,19 +666,6 @@ public final class PowerManagerService extends SystemService
     private static native int nativeGetFeature(int featureId);
 
     private PerformanceManagerInternal mPerf;
-
-    // Whether proximity check on wake is enabled by default
-    private boolean mProximityWakeEnabledByDefaultConfig;
-
-    private boolean mProximityWakeSupported;
-    private boolean mProximityWakeEnabled;
-    private int mProximityTimeOut;
-    private SensorManager mSensorManager;
-    private Sensor mProximitySensor;
-    private SensorEventListener mProximityListener;
-    private android.os.PowerManager.WakeLock mProximityWakeLock;
-
-    private boolean mDevForceNavbar;
 
     // Whether proximity check on wake is enabled by default
     private boolean mProximityWakeEnabledByDefaultConfig;
@@ -5014,78 +4999,6 @@ public final class PowerManagerService extends SystemService
         @Override
         public void setFeature(int featureId, int data) {
             nativeSetFeature(featureId, data);
-        }
-    }
-
-    private void cleanupProximity() {
-        synchronized (mProximityWakeLock) {
-            cleanupProximityLocked();
-        }
-    }
-
-    private void cleanupProximityLocked() {
-        if (mProximityWakeLock.isHeld()) {
-            mProximityWakeLock.release();
-        }
-        if (mProximityListener != null) {
-            mSensorManager.unregisterListener(mProximityListener);
-            mProximityListener = null;
-        }
-    }
-
-    private void runWithProximityCheck(final Runnable r) {
-        if (mHandler.hasMessages(MSG_WAKE_UP)) {
-            // A message is already queued
-            return;
-        }
-
-        final TelephonyManager tm =
-                (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        final boolean hasIncomingCall = tm.getCallState() == TelephonyManager.CALL_STATE_RINGING;
-
-        if (mProximityWakeSupported && mProximityWakeEnabled
-                && mProximitySensor != null && !hasIncomingCall) {
-            final Message msg = mHandler.obtainMessage(MSG_WAKE_UP);
-            msg.obj = r;
-            mHandler.sendMessageDelayed(msg, mProximityTimeOut);
-            runPostProximityCheck(r);
-        } else {
-            r.run();
-        }
-    }
-
-    private void runPostProximityCheck(final Runnable r) {
-        if (mSensorManager == null) {
-            r.run();
-            return;
-        }
-        synchronized (mProximityWakeLock) {
-            mProximityWakeLock.acquire();
-            mProximityListener = new SensorEventListener() {
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-                    cleanupProximityLocked();
-                    if (!mHandler.hasMessages(MSG_WAKE_UP)) {
-                        Slog.w(TAG, "Proximity sensor took too long, wake event already triggered!");
-                        return;
-                    }
-                    mHandler.removeMessages(MSG_WAKE_UP);
-                    final float distance = event.values[0];
-                    if (distance >= PROXIMITY_NEAR_THRESHOLD ||
-                            distance >= mProximitySensor.getMaximumRange()) {
-                        r.run();
-                    } else {
-                        Slog.w(TAG, "Not waking up. Proximity sensor is blocked.");
-                    }
-                }
-
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                    // Do nothing
-                }
-            };
-            mSensorManager.registerListener(mProximityListener,
-                   mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
         }
     }
 
