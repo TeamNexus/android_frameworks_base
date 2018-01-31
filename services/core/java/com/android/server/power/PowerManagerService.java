@@ -262,6 +262,7 @@ public final class PowerManagerService extends SystemService
     private int mButtonBrightness;
     private int mButtonBrightnessSettingDefault;
     private boolean mButtonLightOnKeypressOnly;
+    private boolean mButtonPressed = false;
 
     private final Object mLock = LockGuard.installNewLock(LockGuard.INDEX_POWER);
 
