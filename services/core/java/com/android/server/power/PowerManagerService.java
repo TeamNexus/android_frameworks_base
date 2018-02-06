@@ -114,6 +114,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import vendor.nexus.power.V1_0.NexusPowerHint;
+
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
@@ -2306,6 +2308,9 @@ public final class PowerManagerService extends SystemService
             if (startDreaming) {
                 mDreamManager.stopDream(false /*immediate*/);
                 mDreamManager.startDream(wakefulness == WAKEFULNESS_DOZING);
+
+                // notify power-HAL we transition into dozing/dreaming
+                powerHintInternal(NexusPowerHint.DOZING, 1);
             }
             isDreaming = mDreamManager.isDreaming();
         } else {
@@ -2380,6 +2385,9 @@ public final class PowerManagerService extends SystemService
         // Stop dream.
         if (isDreaming) {
             mDreamManager.stopDream(false /*immediate*/);
+
+            // notify power-HAL we transition away from dozing/dreaming
+            powerHintInternal(NexusPowerHint.DOZING, 0);
         }
     }
 
