@@ -4454,7 +4454,7 @@ public final class PowerManagerService extends SystemService
 
         @Override // Binder call
         public void wakeUp(long eventTime, String reason, String opPackageName) {
-            wakeUp(eventTime, reason, opPackageName, false);
+            wakeUp(eventTime, reason, opPackageName, mProximityWakeEnabled);
         }
 
         @Override // Binder call
