@@ -35,6 +35,7 @@ import android.app.admin.DevicePolicyManager;
 import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -47,6 +48,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationCallback;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationResult;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.CancellationSignal;
 import android.os.Handler;
@@ -91,6 +93,8 @@ import java.util.Map.Entry;
 
 import nexus.provider.NexusSettings;
 import static nexus.provider.NexusSettings.FINGERPRINT_UNLOCK_AFTER_REBOOT;
+import static nexus.provider.NexusSettings.FINGERPRINT_UNLOCK_WHILE_SLEEPING;
+import static nexus.provider.NexusSettings.FINGERPRINT_UNLOCK_WHILE_DOZING;
 
 /**
  * Watches for updates that may be interesting to the keyguard, and provides
@@ -242,6 +246,10 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
     // FP behaviour configuration
     private boolean mFingerprintListenOnSleep;
     private boolean mFingerprintListenWhenDreaming;
+    private boolean mFingerprintUserUnlockWhileSleeping;
+    private boolean mFingerprintUserUnlockWhileDozing;
+
+    private SettingsObserver mSettingsObserver;
 
     private final Handler mHandler = new Handler() {
         @Override
@@ -346,6 +354,43 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
             mHandler.sendEmptyMessage(MSG_SIM_SUBSCRIPTION_INFO_CHANGED);
         }
     };
+
+    private final class SettingsObserver extends ContentObserver {
+        private final Uri FINGERPRINT_UNLOCK_WHILE_SLEEPING_URI
+                = NexusSettings.getUriFor(FINGERPRINT_UNLOCK_WHILE_SLEEPING);
+        private final Uri FINGERPRINT_UNLOCK_WHILE_DOZING_URI
+                = NexusSettings.getUriFor(FINGERPRINT_UNLOCK_WHILE_DOZING);
+
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(FINGERPRINT_UNLOCK_WHILE_SLEEPING_URI,
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(FINGERPRINT_UNLOCK_WHILE_DOZING_URI,
+                    false, this, UserHandle.USER_ALL);
+            update(null);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            update(uri);
+        }
+
+        public void update(Uri uri) {
+			Log.i(TAG, "SettingsObserver.update(" + uri + ")");
+            if (uri == null || FINGERPRINT_UNLOCK_WHILE_SLEEPING_URI.equals(uri)) {
+                mFingerprintUserUnlockWhileSleeping =
+                        NexusSettings.getBoolForCurrentUser(mContext, FINGERPRINT_UNLOCK_WHILE_SLEEPING, false);
+            }
+            if (uri == null || FINGERPRINT_UNLOCK_WHILE_DOZING_URI.equals(uri)) {
+                mFingerprintUserUnlockWhileDozing =
+                        NexusSettings.getBoolForCurrentUser(mContext, FINGERPRINT_UNLOCK_WHILE_DOZING, false);
+            }
+        }
+    }
 
     private SparseBooleanArray mUserHasTrust = new SparseBooleanArray();
     private SparseBooleanArray mUserTrustIsManaged = new SparseBooleanArray();
@@ -1202,6 +1247,9 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
                     R.bool.config_fingerprintListenOnSleep);
         mFingerprintListenWhenDreaming = mContext.getResources().getBoolean(
                     R.bool.config_fingerprintListenWhenDreaming);
+
+        mSettingsObserver = new SettingsObserver(context.getMainThreadHandler());
+        mSettingsObserver.observe();
     }
 
     private void updateFingerprintListeningState() {
@@ -1228,7 +1276,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
 
     private boolean shouldListenForFingerprint() {
         if (!mSwitchingUser && !mKeyguardGoingAway && !isFingerprintDisabled(getCurrentUser())) {
-            if (mFingerprintListenOnSleep || (mIsDreaming && mFingerprintListenWhenDreaming)) {
+            if ((mFingerprintListenOnSleep || mFingerprintUserUnlockWhileSleeping) ||
+                    (mIsDreaming && (mFingerprintListenWhenDreaming || mFingerprintUserUnlockWhileDozing))) {
                 return mKeyguardIsVisible || !mDeviceInteractive || mBouncer || mGoingToSleep;
             } else {
                 return !mGoingToSleep && mDeviceInteractive && (mKeyguardIsVisible || mBouncer);
