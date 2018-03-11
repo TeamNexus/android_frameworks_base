@@ -48,6 +48,18 @@ public final class NexusSettings {
     public static final String KEYGUARD_CLOCK_SHOW_SECONDS = "keyguard_clock_show_seconds";
 
     /**
+     * Whether to keep fingerprint on even when screen is off
+     * @hide
+     */
+    public static final String FINGERPRINT_UNLOCK_WHILE_SLEEPING = "fingerprint_unlock_while_sleeping";
+
+    /**
+     * Whether to keep fingerprint on even if Ambient/Always-on-Display
+     * @hide
+     */
+    public static final String FINGERPRINT_UNLOCK_WHILE_DOZING = "fingerprint_unlock_while_dozing";
+
+    /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
      * the current user is not 0, returning a default value if no stored value
      * was found
