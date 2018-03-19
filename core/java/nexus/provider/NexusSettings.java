@@ -60,6 +60,12 @@ public final class NexusSettings {
     public static final String FINGERPRINT_UNLOCK_WHILE_DOZING = "fingerprint_unlock_while_dozing";
 
     /**
+     * The actual intensity of the vibrator intensity, given in percentage
+     * @hide
+     */
+    public static final String VIBRATOR_INTENSITY = "vibrator_intensity";
+
+    /**
      * Wrapper for getIntForCurrentUser(). Returns true if the stored integerfor
      * the current user is not 0, returning a default value if no stored value
      * was found
