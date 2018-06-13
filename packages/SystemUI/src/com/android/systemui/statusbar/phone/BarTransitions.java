@@ -236,9 +236,9 @@ public class BarTransitions {
         @Override
         public void draw(Canvas canvas) {
             int targetGradientAlpha = 0, targetColor = 0;
-            if (mMode == MODE_WARNING) {
+            /* if (mMode == MODE_WARNING) {
                 targetColor = mWarning;
-            } else if (mMode == MODE_TRANSLUCENT) {
+            } else */ if (mMode == MODE_TRANSLUCENT) {
                 targetColor = mSemiTransparent;
             } else if (mMode == MODE_SEMI_TRANSPARENT) {
                 targetColor = mSemiTransparent;
